@@ -172,6 +172,7 @@ class OrderResource extends Resource
                         ->required()
                         ->numeric()
                         ->live()
+                        ->gte('total')
                         ->afterStateUpdated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
