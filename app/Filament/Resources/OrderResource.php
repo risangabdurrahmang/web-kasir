@@ -81,12 +81,12 @@ class OrderResource extends Resource
                     ->columnSpanFull()
                     ->schema([
                         Forms\Components\Select::make('product_id')
-                            ->options(Product::pluck('name', 'id'))
+                            ->options(Product::where('stock', '>', 0)->pluck('name', 'id'))
                             ->required()
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('stock', Product::find($state)?->stock ?? 0))
-                            ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('price', Product::find($state)?->price ?? 0))
-                            ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('sub_total', Product::find($state)?->price ?? 0))
+                            ->afterStateUpdated(fn($state, Forms\Set $set) => $set('stock', Product::find($state)?->stock ?? 0))
+                            ->afterStateUpdated(fn($state, Forms\Set $set) => $set('price', Product::find($state)?->price ?? 0))
+                            ->afterStateUpdated(fn($state, Forms\Set $set) => $set('sub_total', Product::find($state)?->price ?? 0))
                             ->distinct()
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->searchable()
@@ -98,8 +98,9 @@ class OrderResource extends Resource
                             ->required()
                             ->default(1)
                             ->minValue(1)
+                            ->lte('stock')
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, Set $set, Get $get) => $set('sub_total', $state * $get('price'))),
+                            ->afterStateUpdated(fn($state, Set $set, Get $get) => $set('sub_total', $state * $get('price'))),
                         Forms\Components\TextInput::make('stock')
                             ->label('Stock')
                             ->numeric()
@@ -136,7 +137,7 @@ class OrderResource extends Resource
                         self::updateTotals($get, $set);
                     })
                     ->deleteAction(
-                        fn (Action $action) => $action->after(fn (Get $get, Set $set) => self::updateTotals($get, $set)),
+                        fn(Action $action) => $action->after(fn(Get $get, Set $set) => self::updateTotals($get, $set)),
                     )
                     ->extraItemActions([
                         Action::make('openProduct')
@@ -150,7 +151,7 @@ class OrderResource extends Resource
                                 }
                                 return ProductResource::getUrl('edit', ['record' => $product]);
                             }, shouldOpenInNewTab: true)
-                            ->hidden(fn (array $arguments, Repeater $component): bool => blank($component->getRawItemState($arguments['item'])['product_id'])),
+                            ->hidden(fn(array $arguments, Repeater $component): bool => blank($component->getRawItemState($arguments['item'])['product_id'])),
                     ])
                     ->columns([
                         'md' => 10,
@@ -258,7 +259,7 @@ class OrderResource extends Resource
 
     public static function updateTotals(Get $get, Set $set): void
     {
-        $selectedProducts = collect($get('items'))->filter(fn ($item) => !empty($item['product_id']) && !empty($item['quantity']));
+        $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
 
         $prices = Product::find($selectedProducts->pluck('product_id'))->pluck('price', 'id');
 

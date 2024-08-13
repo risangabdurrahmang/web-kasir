@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
+use App\Models\Order;
+use App\Models\Product;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CreateOrder extends CreateRecord
 {
@@ -18,20 +22,22 @@ class CreateOrder extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Get the newly created order with eager loading
+        // Get the newly created order with its related items
         $order = $this->record->load('items');
 
+        // Perform the stock reduction inside a database transaction
         DB::transaction(function () use ($order) {
-            // Loop through each order item
             foreach ($order->items as $item) {
-                // Get the product associated with the order item
+                // Get the associated product
                 $product = $item->product;
 
-                // Decrease the stock of the product
-                $product->stock -= $item->quantity;
+                if ($product) {
+                    // Reduce the product stock by the quantity ordered
+                    $product->decrement('stock', $item->quantity);
 
-                // Save the updated product
-                $product->save();
+                    // Save the updated product
+                    $product->save();
+                }
             }
         });
     }

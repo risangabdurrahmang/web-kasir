@@ -8,8 +8,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class PosPage extends Component
@@ -52,7 +54,7 @@ class PosPage extends Component
 
     public function loadProducts()
     {
-        $this->products = Product::when($this->search, function ($query) {
+        $this->products = Product::where('stock', '>', 0)->when($this->search, function ($query) {
             $query->where('name', 'like', '%' . $this->search . '%');
         })->get();
     }
@@ -118,8 +120,6 @@ class PosPage extends Component
     {
         $totalPrice = $this->getTotalPrice();
         if ($paid < $totalPrice) {
-            // handle error, for example:
-            // session()->flash('error', 'Paid amount cannot be less than total price');
             $this->addError('paid', 'Paid amount cannot be less than total price');
             return null;
         }
@@ -129,43 +129,67 @@ class PosPage extends Component
 
     public function saveOrder()
     {
-        // try {
-        $this->validate([
-            'payment_id' => 'required|exists:payments,id',
-            'paid' => 'required_if:payment_id,cash|numeric|min:1',
-        ]);
-
-        DB::transaction(function () {
-            $order = Order::create([
-                'payment_id' => $this->payment_id,
-                'order_date' => now(),
-                'paid' => $this->paid,
-                'money_changes' => $this->calculateMoneyChanges($this->paid),
-                'total' => $this->getTotalPrice(),
+        try {
+            // Validasi input
+            $this->validate([
+                'payment_id' => 'required|exists:payments,id',
+                // 'paid' => 'required_if:payment_id,cash|numeric|min:1',
             ]);
 
-            foreach ($this->cartItems as $cartItem) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $product = Product::where('name', $cartItem['name'])->first();
-                $orderItem->product_id = $product->id;
-                $orderItem->quantity = $cartItem['quantity'];
-                $orderItem->sub_total = $product['price'] * $cartItem['quantity'];
-                $orderItem->save();
-                // Decrement stock langsung pada product
-                if ($product) {
+            DB::transaction(function () {
+                // Buat order baru
+                $order = Order::create([
+                    'payment_id' => $this->payment_id,
+                    'order_date' => now(),
+                    // 'paid' => $this->paid,
+                    // 'money_changes' => $this->calculateMoneyChanges($this->paid),
+                    'total' => $this->getTotalPrice(),
+                ]);
+
+                foreach ($this->cartItems as $cartItem) {
+                    // Cari produk berdasarkan nama
+                    $product = Product::where('name', $cartItem['name'])->first();
+
+                    if ($product->stock < $cartItem['quantity']) {
+                        // throw new \Exception("Not enough stock for product '{$product->name}'");
+                        Notification::make()
+                            ->title('Error')
+                            ->body("Not enough stock for product '{$product->name}'")
+                            ->danger()
+                            ->send();
+                    }
+
+                    // Buat item pesanan
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->product_id = $product->id;
+                    $orderItem->quantity = $cartItem['quantity'];
+                    $orderItem->sub_total = $product->price * $cartItem['quantity'];
+                    $orderItem->save();
+
+                    // Kurangi stok produk
                     $product->decrement('stock', $cartItem['quantity']);
                 }
-            }
-        });
-        //     session()->flash('success', 'Order saved successfully!');
-        // } catch (\Illuminate\Validation\ValidationException $e) {
-        //     session()->flash('error', 'Validation error: ' . $e->getMessage());
-        // } catch (\Exception $e) {
-        //     session()->flash('error', 'Error saving order: ' . $e->getMessage());
-        // }
-        $this->reset(); // reset the form data
-        return redirect('/admin/pos-page');
+            });
+            Notification::make()
+                ->title('Saved successfully')
+                ->success()
+                ->send();
+            $this->reset(); // reset the form data
+            return redirect('/admin/orders');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Notification::make()
+                ->title('Error')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 
     public function render()

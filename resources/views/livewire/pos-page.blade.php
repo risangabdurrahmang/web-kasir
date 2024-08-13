@@ -1,4 +1,4 @@
-<section class="antialiased">
+<section class="antialiased bg-gray-50 dark:bg-gray-950">
     <article class="mx-auto max-w-screen-xl px-4 md:px-0 2xl:px-0">
         <div class="mt-6 sm:mt-8 md:flex lg:items-start gap-8">
             <div class="md:w-2/3 space-y-8">
@@ -24,21 +24,24 @@
                     <div class="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3">
                         @foreach ($products as $product)
                             <div wire:click="addItem({{ $product->id }})"
-                                class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                class="w-full h-40 max-w-sm sm:max-w-full flex md:flex-col md:h-full justify-start items-center bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                 <a href="#">
-                                    <img class="p-8 rounded-t-lg mx-auto"
+                                    <img class="p-6 rounded-t-lg mx-auto h-44"
                                         src="{{ asset('storage/' . $product->image) }}"
                                         alt="{{ $product->name . ' image' }}" />
                                 </a>
-                                <div class="px-5 pb-5">
+                                <div class="px-5 pt-4 md:pt-0 pb-4">
                                     <a href="#">
                                         <h5
-                                            class="text-2xl md:text-base lg:text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+                                            class="text-xl md:text-md font-bold tracking-tight text-gray-900 dark:text-white">
                                             {{ $product->name }}</h5>
                                     </a>
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex flex-col justify-between mt-2 gap-4">
                                         <span
-                                            class="text-xl md:text-base lg:text-md font-bold text-gray-900 dark:text-white">Rp.{{ Number::format($product->price) }}</span>
+                                            class="text-lg sm:text-base md:text-sm font-semibold text-gray-850 dark:text-white">Rp.{{ Number::format($product->price) }}</span>
+                                        <span
+                                            class="text-lg sm:text-base md:text-sm font-semibold text-gray-800 dark:text-white">Stok
+                                            : {{ $product->stock }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -47,9 +50,12 @@
                 </div>
             </div>
             <!-- Cart and Payment -->
-            <div class="mt-6 md:w-1/3 space-y-6 sm:mt-8">
+            <x-filament::section class="mt-6 md:w-1/3 space-y-6 sm:mt-8 md:mt-0">
+                <x-slot name="heading">
+                    Keranjang Belanja
+                </x-slot>
                 <form wire:submit.prevent="saveOrder">
-                    <div class="flow-root max-h-[500px] overflow-y-auto py-2">
+                    <div class="flow-root">
                         @if (empty($cartItems))
                             <p class="text-sm text-center my-6">Keranjang Kosong</p>
                         @else
@@ -79,7 +85,15 @@
                         @endif
                     </div>
                     <!-- Payment Options -->
-                    <div class="mt-6 grid w-full gap-6 grid-cols-2">
+                    <x-filament::input.wrapper class="mt-6">
+                        <x-filament::input.select wire:model="payment_id">
+                            <option value="">Pilih pembayaran</option>
+                            @foreach ($payments as $payment)
+                                <option value={{ $payment->id }}>{{ $payment->payment_method }}</option>
+                            @endforeach
+                        </x-filament::input.select>
+                    </x-filament::input.wrapper>
+                    {{-- <div class="mt-6 grid w-full gap-6 grid-cols-2">
                         @foreach ($payments as $payment)
                             <label class="block mb-2 text-center cursor-pointer">
                                 <input type="radio" wire:model="payment_id" value="{{ $payment->id }}"
@@ -93,35 +107,36 @@
                     </div>
                     @error('payment_id')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
+                    @enderror --}}
                     <!-- Payment Input Fields -->
-                    <ul class="mt-4 w-full space-y-4">
+                    {{-- <ul class="mt-4 w-full space-y-4">
                         <li>
-                            <input wire:model="paid" type="number" name="paid" id="paid" placeholder="Dibayar"
-                                wire:change="$set('paid', $event.target.value)"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500" />
-                            @error('paid')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
+                            <x-filament::input.wrapper>
+                                <x-filament::input required wire:model="paid" type="number" name="paid"
+                                    id="paid" placeholder="Dibayar"
+                                    wire:change="$set('paid', $event.target.value)" />
+                            </x-filament::input.wrapper>
                         </li>
                         <li>
-                            <input wire:model.lazy="money_changes" value="{{ $money_changes }}" type="number" disabled
-                                readonly name="money_changes" id="money_changes" placeholder="Kembalian"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500" />
+                            <x-filament::input.wrapper>
+                                <x-filament::input wire:model.lazy="money_changes" value="{{ $money_changes }}"
+                                    type="number" disabled readonly name="money_changes" id="money_changes"
+                                    placeholder="Kembalian" />
+                            </x-filament::input.wrapper>
                         </li>
-                    </ul>
-                    <dl class="flex items-center justify-between gap-4 py-3">
+                    </ul> --}}
+                    <dl class="flex items-center justify-between gap-4 py-4">
                         <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
                         <dd class="text-base font-bold text-gray-900 dark:text-white">Rp.
                             {{ Number::format($this->getTotalPrice()) }}</dd>
                     </dl>
                     <div class="space-y-3">
-                        <button type="submit"
-                            class="block w-full rounded-lg bg-yellow-400 px-5 py-2.5 text-sm font-medium text-white hover:bg-yellow-500 focus:outline-none focus:ring-4  focus:ring-yellow-400 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-400">Simpan
-                            Pesanan</button>
+                        <x-filament::button color="warning" type="submit" class="w-full">
+                            Checkout
+                        </x-filament::button>
                     </div>
                 </form>
-            </div>
+            </x-filament::section>
         </div>
     </article>
 </section>
