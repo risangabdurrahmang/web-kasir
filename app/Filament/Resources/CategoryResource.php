@@ -27,7 +27,6 @@ class CategoryResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    // protected static ?string $navigationIcon = 'heroicon-m-tag';
 
     public static function form(Form $form): Form
     {
@@ -37,7 +36,7 @@ class CategoryResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
+                    ->afterStateUpdated(fn(string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
                 Forms\Components\TextInput::make('slug')
                     ->disabled()
                     ->dehydrated()
@@ -55,14 +54,9 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->modifyQueryUsing(function ($query) {
-            //     return $query->load('product');
-            // })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('slug')
-                //     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->placeholder('-')
                     ->searchable(),

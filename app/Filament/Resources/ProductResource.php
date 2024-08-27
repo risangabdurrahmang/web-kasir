@@ -42,7 +42,7 @@ class ProductResource extends Resource
                         ->required()
                         ->maxLength(255)
                         ->live(onBlur: true)
-                        ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
+                        ->afterStateUpdated(fn(string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
                     Forms\Components\TextInput::make('slug')
                         ->disabled()
                         ->dehydrated()
@@ -51,7 +51,6 @@ class ProductResource extends Resource
                         ->unique(Product::class, 'slug', ignoreRecord: true),
                     Forms\Components\TextInput::make('sku')
                         ->unique(Product::class, 'sku', ignoreRecord: true)
-                        // ->required()
                         ->maxLength(255),
                     Forms\Components\TextInput::make('price')
                         ->required()
@@ -75,9 +74,6 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->modifyQueryUsing(function ($query) {
-            //     return $query->with('category');
-            // })
             ->columns([
                 Tables\Columns\ImageColumn::make('image'),
                 Tables\Columns\TextColumn::make('name')
