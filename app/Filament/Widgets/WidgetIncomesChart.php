@@ -18,39 +18,34 @@ class WidgetIncomesChart extends ChartWidget
 
     protected function getData(): array
     {
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? now();
+        $startDate = ! is_null($this->filters['startDate'] ?? null) ?
+            Carbon::parse($this->filters['startDate']) :
+            Carbon::now()->subDay(7)->startOfDay();
 
-        // Set start date to 12 months ago from the end date
-        $startDate = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::parse($endDate)->subMonths(12)->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
+        $endDate = ! is_null($this->filters['endDate'] ?? null) ?
+            Carbon::parse($this->filters['endDate']) :
+            now();
 
         $data = Trend::model(Order::class)
             ->between(
                 start: $startDate,
                 end: $endDate,
             )
-            ->perMonth()
+            ->perDay()
             ->sum('total');
-
-        // Fill missing months with 0
-        $filledData = collect();
-        $period = Carbon::parse($startDate)->monthsUntil($endDate);
-        foreach ($period as $month) {
-            $filledData->push([
-                'date' => $month->format('M Y'),
-                'aggregate' => $data->firstWhere('date', $month->format('Y-m'))?->aggregate ?? 0,
-            ]);
-        }
 
         return [
             'datasets' => [
                 [
                     'label' => 'Pemasukan',
-                    'data' => $filledData->pluck('aggregate'),
+                    'data' => $data->pluck('aggregate'),
                 ],
             ],
-            'labels' => $filledData->pluck('date'),
+            'labels' => $data->pluck('date')->map(function ($date) {
+                return Carbon::parse($date)->format('D');
+                // $carbonDate = Carbon::parse($date);
+                // return $carbonDate->isoFormat('dddd, D MMMM YYYY');
+            }),
         ];
     }
 

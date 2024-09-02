@@ -2,8 +2,11 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Customer;
 use App\Models\Expenses;
 use App\Models\Order;
+use Awcodes\Overlook\Concerns\HandlesOverlookWidgetCustomization;
+use Awcodes\Overlook\OverlookPlugin;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
@@ -17,29 +20,22 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? now();
+        $startDate = ! is_null($this->filters['startDate'] ?? null) ?
+            Carbon::parse($this->filters['startDate']) :
+            Carbon::now()->subDay(7)->startOfDay();
 
-        $startDate = $startDate ? Carbon::parse($startDate)->startOfDay() : now()->startOfYear()->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
+        $endDate = ! is_null($this->filters['endDate'] ?? null) ?
+            Carbon::parse($this->filters['endDate']) :
+            now();
 
-        $pemasukan = Order::whereBetween('order_date', [$startDate, $endDate])->sum('total');
+        $pemasukan = Order::whereBetween('created_at', [$startDate, $endDate])->sum('total');
         $pengeluaran = Expenses::whereBetween('date_expense', [$startDate, $endDate])->sum('amount');
         $selisih = $pemasukan - $pengeluaran;
 
         return [
             Stat::make('Pemasukan', 'Rp. ' . number_format($pemasukan, 0, ',', '.')),
-            // ->description('32k increase')
-            // ->descriptionIcon('heroicon-m-arrow-trending-down')
-            // ->color('success'),
             Stat::make('Pengeluaran', 'Rp. ' . number_format($pengeluaran, 0, ',', '.')),
-            // ->description('7% increase')
-            // ->descriptionIcon('heroicon-m-arrow-trending-up')
-            // ->color('danger'),
             Stat::make('Selisih', 'Rp. ' . number_format($selisih, 0, ',', '.')),
-            // ->description('3% increase')
-            // ->descriptionIcon('heroicon-m-arrows-up-down')
-            // ->color('info'),
         ];
     }
 }

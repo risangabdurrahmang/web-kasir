@@ -13,6 +13,7 @@ class Dashboard extends BaseDashboard
 {
     use BaseDashboard\Concerns\HasFiltersForm;
 
+    // filter data kustom berdasarkan tanggal, bulan, tahun
     public function filtersForm(Form $form): Form
     {
         return $form
@@ -20,9 +21,9 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         DatePicker::make('startDate')
-                            ->maxDate(fn (Get $get) => $get('endDate') ?: now()),
+                            ->maxDate(fn(Get $get) => $get('endDate') ?: now()),
                         DatePicker::make('endDate')
-                            ->minDate(fn (Get $get) => $get('startDate') ?: now())
+                            ->minDate(fn(Get $get) => $get('startDate') ?: now())
                             ->maxDate(now()),
                     ])
                     ->columns(2),
