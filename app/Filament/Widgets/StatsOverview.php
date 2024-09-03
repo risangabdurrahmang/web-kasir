@@ -39,10 +39,6 @@ class StatsOverview extends BaseWidget
                 label: 'Pemasukan',
                 value: 'Rp. ' . number_format($pemasukan, 0, ',', '.'),
             ),
-            // ->description('32k increase')
-            // ->descriptionIcon('heroicon-m-arrow-trending-down')
-            // ->chart([7, 2, 10, 3, 15, 4, 17])
-            // ->color('success'),
             Stat::make(
                 label: 'Pengeluaran',
                 value: 'Rp. ' . number_format($pengeluaran, 0, ',', '.'),
