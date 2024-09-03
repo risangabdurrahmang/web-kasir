@@ -18,18 +18,13 @@ class WidgetExpensesChart extends ChartWidget
 
     protected function getData(): array
     {
-        $startDate = ! is_null($this->filters['startDate'] ?? null) ?
-            Carbon::parse($this->filters['startDate']) :
-            Carbon::now()->subDay(7)->startOfDay();
-
-        $endDate = ! is_null($this->filters['endDate'] ?? null) ?
-            Carbon::parse($this->filters['endDate']) :
-            now();
+        $startDate = $this->filters['startDate'];
+        $endDate = $this->filters['endDate'];
 
         $data = Trend::model(Expenses::class)
             ->between(
-                start: $startDate,
-                end: $endDate,
+                start: $startDate ? Carbon::parse($startDate) : now()->subDay(7),
+                end: $endDate ? Carbon::parse($endDate) : now(),
             )
             ->perDay()
             ->sum('amount');
