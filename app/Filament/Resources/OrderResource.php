@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Tables\Filters\TrashedFilter;
 
 class OrderResource extends Resource
 {
@@ -38,7 +39,7 @@ class OrderResource extends Resource
                     Forms\Components\Select::make('customer_id')
                         ->searchable()
                         ->relationship('customer', 'name')
-                        // ->required()
+                        ->required()
                         ->createOptionForm([
                             Forms\Components\TextInput::make('name')
                                 ->required()
@@ -70,9 +71,6 @@ class OrderResource extends Resource
                                 ->modalSubmitActionLabel('Create customer')
                                 ->modalWidth('lg');
                         }),
-                    Forms\Components\DatePicker::make('order_date')
-                        ->required()
-                        ->columns(1),
                     Forms\Components\RichEditor::make('notes')
                         ->columnSpanFull(),
                 ])->columns(2),
@@ -191,19 +189,20 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('customer.name')
-                    ->placeholder('-')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('order_date')
-                    ->date()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Order Date')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('payment.payment_method')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paid')
+                    ->placeholder('-')
                     ->numeric()
                     ->sortable()
                     ->money('IDR', locale: 'id'),
                 Tables\Columns\TextColumn::make('money_changes')
+                    ->placeholder('-')
                     ->numeric()
                     ->sortable()
                     ->money('IDR', locale: 'id'),
@@ -211,10 +210,6 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->money('IDR', locale: 'id'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -225,19 +220,31 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TrashedFilter::make()
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
                 ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 
@@ -257,6 +264,7 @@ class OrderResource extends Resource
         ];
     }
 
+    // fungsi untuk kembalian dan total belanja dari produk yang sudah dipilih
     public static function updateTotals(Get $get, Set $set): void
     {
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
@@ -269,7 +277,6 @@ class OrderResource extends Resource
 
         $set('total', number_format($total, 0, '.', ''));
 
-        // Calculate money changes
         $paid = $get('paid');
         $total = $get('total');
 

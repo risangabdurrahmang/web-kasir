@@ -17,6 +17,8 @@ class EditOrder extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+            Actions\ForceDeleteAction::make(),
+            Actions\RestoreAction::make(),
         ];
     }
 
@@ -25,7 +27,6 @@ class EditOrder extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
-    // hook yang dijalankan ketika form sudah di edit untuk mengurangi stok produk ketika jumlah di tambah dan sebaliknya
     protected function afterSave(): void
     {
         DB::transaction(function () {

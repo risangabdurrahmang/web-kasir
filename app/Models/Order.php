@@ -8,25 +8,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([OrderObserver::class])]
 class Order extends Model
 {
+    use SoftDeletes;
     use HasFactory;
 
     protected $fillable = [
         'payment_id',
-        'order_date',
         'notes',
         'customer_id',
         'paid',
         'money_changes',
         'total',
     ];
-
-    // protected $casts = [
-    //     'items' => 'array',
-    // ];
 
     public function items(): HasMany
     {

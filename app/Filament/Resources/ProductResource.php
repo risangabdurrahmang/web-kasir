@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -29,6 +30,8 @@ class ProductResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {
@@ -89,7 +92,9 @@ class ProductResource extends Resource
                     ->money('IDR', locale: 'id'),
                 Tables\Columns\TextColumn::make('stock')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color(fn(string $state): string => (int) $state < 10 ? 'danger' : 'success'),
                 Tables\Columns\IconColumn::make('is_visible')
                     ->label('Visibility')
                     ->boolean()
@@ -108,13 +113,15 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TrashedFilter::make()
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
                 ])
             ])
             ->bulkActions([
@@ -126,7 +133,23 @@ class ProductResource extends Resource
                             }
                         }
                     }),
+                    Tables\Actions\ForceDeleteBulkAction::make()->after(function (Collection $records) {
+                        foreach ($records as $key => $value) {
+                            if ($value->image) {
+                                Storage::disk('public')->delete($value->image);
+                            }
+                        }
+                    }),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
             ]);
     }
 
