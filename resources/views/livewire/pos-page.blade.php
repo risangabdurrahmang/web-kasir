@@ -166,15 +166,13 @@
                         </x-filament::button>
                     </div>
                 </form>
-            </x-filament::section>
-            <!-- Modal -->
-            <div x-data="{ showModal: @entangle('showModal') }">
-                <!-- Main modal -->
-                <div x-show="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div class="relative p-4 w-full max-w-md max-h-full">
+                <div x-data="{ showModal: @entangle('showModal') }" x-show="showModal"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                    @click.away="showModal = false">
+                    <!-- Main modal -->
+                    <div class="relative p-4 w-full max-w-md max-h-full" @click.away="showModal = false">
                         <!-- Modal content -->
-                        <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg shadow">
-                            <!-- Modal header -->
+                        <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg shadow" @click.stop>
                             <div
                                 class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -225,7 +223,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </x-filament::section>
         </div>
     </article>
 </section>

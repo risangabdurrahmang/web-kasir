@@ -126,20 +126,8 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->after(function (Collection $records) {
-                        foreach ($records as $key => $value) {
-                            if ($value->image) {
-                                Storage::disk('public')->delete($value->image);
-                            }
-                        }
-                    }),
-                    Tables\Actions\ForceDeleteBulkAction::make()->after(function (Collection $records) {
-                        foreach ($records as $key => $value) {
-                            if ($value->image) {
-                                Storage::disk('public')->delete($value->image);
-                            }
-                        }
-                    }),
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);

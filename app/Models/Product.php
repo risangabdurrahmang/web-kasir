@@ -30,9 +30,25 @@ class Product extends Model
     protected static function boot()
     {
         parent::boot();
+
+        // Saat model diperbarui dan gambar diubah, hapus gambar lama
         static::updating(function ($model) {
             if ($model->isDirty('image') && ($model->getOriginal('image') !== null)) {
-                Storage::disk('public')->delete($model->getOriginal('image'));
+                $filePath = $model->getOriginal('image');
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+            }
+        });
+
+        // Saat model dihapus (soft delete), jangan hapus gambar
+        static::deleting(function ($model) {
+            if ($model->forceDeleting && $model->image !== null) {
+                // Jika force delete, hapus gambar dari storage
+                $filePath = $model->image;
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
             }
         });
     }
