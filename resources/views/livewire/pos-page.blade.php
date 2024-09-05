@@ -125,7 +125,7 @@
                                 <ul class="max-h-60 overflow-auto">
                                     <template x-for="option in filteredOptions" :key="option.id">
                                         <li @click="selectOption(option)"
-                                            class="cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-300"
+                                            class="cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-300"
                                             :class="{
                                                 'bg-yellow-500 text-black dark:text-white': selectedOption &&
                                                     selectedOption
@@ -149,7 +149,7 @@
                                 <input type="radio" wire:model="payment_id" value="{{ $payment->id }}"
                                     class="hidden peer" />
                                 <div
-                                    class="p-2.5 bg-transparent border border-yellow-300 text-gray-900 text-sm rounded-lg hover:bg-yellow-400 peer-checked:bg-yellow-400 peer-checked:text-white focus:ring-yellow-400 focus:border-yellow-400 dark:border-yellow-400 dark:placeholder-gray-400 dark:text-white dark:peer-checked:bg-yellow-400 dark:peer-checked:border-yellow-400">
+                                    class="p-2.5 bg-transparent font-bold border-2 border-yellow-300 text-gray-900 text-sm rounded-lg hover:bg-yellow-400 peer-checked:bg-yellow-400 peer-checked:text-black focus:ring-yellow-400 focus:border-yellow-400 dark:border-yellow-400 dark:text-white dark:hover:text-black dark:peer-checked:bg-yellow-400 dark:peer-checked:border-yellow-400">
                                     {{ $payment->payment_method }}
                                 </div>
                             </label>
