@@ -80,7 +80,6 @@ class OrderResource extends Resource
                     ->columnSpanFull()
                     ->schema([
                         Forms\Components\Select::make('product_id')
-                            // ->options(Product::where('stock', '>', 0)->pluck('name', 'id'))
                             ->options(function () {
                                 return Product::where('stock', '>', 0)
                                     ->where('is_visible', true)
@@ -165,6 +164,7 @@ class OrderResource extends Resource
                     Forms\Components\Select::make('payment_id')
                         ->relationship('payment', 'payment_method')
                         ->native(false)
+                        ->reactive()
                         ->required()
                         ->options(function () {
                             return Payment::where('is_visible', true)->pluck('payment_method', 'id');
@@ -177,16 +177,17 @@ class OrderResource extends Resource
                             self::updateTotals($get, $set);
                         }),
                     Forms\Components\TextInput::make('paid')
-                        ->required()
                         ->numeric()
                         ->live()
                         ->gte('total')
+                        ->visible(fn(Get $get): int => $get('payment_id') == 1)
                         ->afterStateUpdated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
                     Forms\Components\TextInput::make('money_changes')
                         ->readOnly()
                         ->numeric()
+                        ->visible(fn(Get $get): int => $get('payment_id') == 1)
                         ->afterStateHydrated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
@@ -286,11 +287,11 @@ class OrderResource extends Resource
 
         $set('total', number_format($total, 0, '.', ''));
 
-        $paid = $get('paid');
         $total = $get('total');
+        $paid = intval($get('paid')); // or floatval($get('paid')) if you expect floats
 
         if ($paid > $total) {
-            $moneyChanges = $paid - $total;
+            $moneyChanges = $paid - intval($total); // or floatval($total)
             $set('money_changes', number_format($moneyChanges, 0, '.', ''));
         } else {
             $set('money_changes', 0);

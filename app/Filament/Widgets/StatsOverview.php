@@ -21,31 +21,31 @@ class StatsOverview extends BaseWidget
         $startDate = $this->filters['startDate'] ?? null;
         $endDate = $this->filters['endDate'] ?? null;
 
-        $pemasukan = Order::query()
+        $income = Order::query()
             ->when($startDate, fn(Builder $query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn(Builder $query) => $query->whereDate('created_at', '<=', $endDate))
             ->sum('total');
-        $pengeluaran = Expenses::query()
+        $expenses = Expenses::query()
             ->when($startDate, fn(Builder $query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn(Builder $query) => $query->whereDate('created_at', '<=', $endDate))
             ->sum('amount');
-        $pelanggan = Customer::query()
+        $customers = Customer::query()
             ->when($startDate, fn(Builder $query) => $query->whereDate('created_at', '>=', $startDate))
             ->when($endDate, fn(Builder $query) => $query->whereDate('created_at', '<=', $endDate))
             ->count();
 
         return [
             Stat::make(
-                label: 'Pemasukan',
-                value: 'Rp. ' . number_format($pemasukan, 0, ',', '.'),
+                label: 'Income',
+                value: 'Rp. ' . number_format($income, 0, ',', '.'),
             ),
             Stat::make(
-                label: 'Pengeluaran',
-                value: 'Rp. ' . number_format($pengeluaran, 0, ',', '.'),
+                label: 'Expenses',
+                value: 'Rp. ' . number_format($expenses, 0, ',', '.'),
             ),
             Stat::make(
-                label: 'Pelanggan',
-                value: $pelanggan,
+                label: 'Customers',
+                value: $customers,
             ),
         ];
     }

@@ -13,7 +13,7 @@ class WidgetExpensesChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Pengeluaran';
+    protected static ?string $heading = 'Expenses';
     protected static string $color = 'danger';
 
     protected function getData(): array
@@ -32,7 +32,7 @@ class WidgetExpensesChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Pengeluaran',
+                    'label' => 'Expenses',
                     'data' => $data->pluck('aggregate'),
                 ],
             ],
