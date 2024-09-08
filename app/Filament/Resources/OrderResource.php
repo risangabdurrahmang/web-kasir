@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use Filament\Forms;
@@ -274,7 +272,6 @@ class OrderResource extends Resource
         ];
     }
 
-    // fungsi untuk kembalian dan total belanja dari produk yang sudah dipilih
     public static function updateTotals(Get $get, Set $set): void
     {
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
@@ -288,10 +285,10 @@ class OrderResource extends Resource
         $set('total', number_format($total, 0, '.', ''));
 
         $total = $get('total');
-        $paid = intval($get('paid')); // or floatval($get('paid')) if you expect floats
+        $paid = intval($get('paid'));
 
         if ($paid > $total) {
-            $moneyChanges = $paid - intval($total); // or floatval($total)
+            $moneyChanges = $paid - intval($total);
             $set('money_changes', number_format($moneyChanges, 0, '.', ''));
         } else {
             $set('money_changes', 0);
