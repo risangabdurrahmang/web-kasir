@@ -16,7 +16,7 @@ class Payment extends Model
     protected $fillable = [
         'payment_method',
         'image',
-        // 'is_active',
+        'is_visible',
     ];
 
     protected static function boot()

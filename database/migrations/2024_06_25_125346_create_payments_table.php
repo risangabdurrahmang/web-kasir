@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('payment_method');
             $table->string('image')->nullable();
+            $table->boolean('is_visible')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

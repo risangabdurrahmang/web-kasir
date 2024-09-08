@@ -6,6 +6,7 @@ use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
@@ -79,7 +80,12 @@ class OrderResource extends Resource
                     ->columnSpanFull()
                     ->schema([
                         Forms\Components\Select::make('product_id')
-                            ->options(Product::where('stock', '>', 0)->pluck('name', 'id'))
+                            // ->options(Product::where('stock', '>', 0)->pluck('name', 'id'))
+                            ->options(function () {
+                                return Product::where('stock', '>', 0)
+                                    ->where('is_visible', true)
+                                    ->pluck('name', 'id');
+                            })
                             ->required()
                             ->reactive()
                             ->afterStateUpdated(fn($state, Forms\Set $set) => $set('stock', Product::find($state)?->stock ?? 0))
@@ -159,7 +165,10 @@ class OrderResource extends Resource
                     Forms\Components\Select::make('payment_id')
                         ->relationship('payment', 'payment_method')
                         ->native(false)
-                        ->required(),
+                        ->required()
+                        ->options(function () {
+                            return Payment::where('is_visible', true)->pluck('payment_method', 'id');
+                        }),
                     Forms\Components\TextInput::make('total')
                         ->numeric()
                         ->readOnly()

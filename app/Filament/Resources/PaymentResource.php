@@ -35,6 +35,9 @@ class PaymentResource extends Resource
                     ->maxLength(255),
                 Forms\Components\FileUpload::make('image')
                     ->image(),
+                Forms\Components\Toggle::make('is_visible')
+                    ->label('Visible')
+                    ->default(false),
             ]);
     }
 
@@ -46,6 +49,13 @@ class PaymentResource extends Resource
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('image')
                     ->placeholder('-'),
+                Tables\Columns\ToggleColumn::make('is_visible')
+                    ->label('Visibility')
+                    ->beforeStateUpdated(function (Payment $record) {
+                        if ($record->is_visible) {
+                            Payment::where('id', '!=', $record->id)->update(['is_visible' => false]);
+                        }
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -58,12 +58,16 @@ class CategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('description')
-                    ->placeholder('-')
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('is_visible')
+                // Tables\Columns\TextColumn::make('description')
+                //     ->placeholder('-')
+                //     ->searchable(),
+                Tables\Columns\ToggleColumn::make('is_visible')
                     ->label('Visibility')
-                    ->boolean(),
+                    ->beforeStateUpdated(function (Category $record) {
+                        if ($record->is_visible) {
+                            Category::where('id', '!=', $record->id)->update(['is_visible' => false]);
+                        }
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

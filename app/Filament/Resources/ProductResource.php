@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -40,7 +41,11 @@ class ProductResource extends Resource
                 Section::make('Product Information')->schema([
                     Forms\Components\Select::make('category_id')
                         ->relationship('category', 'name')
-                        ->required(),
+                        ->native(false)
+                        ->required()
+                        ->options(function () {
+                            return Category::where('is_visible', true)->pluck('name', 'id');
+                        }),
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255)
@@ -95,10 +100,13 @@ class ProductResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color(fn(string $state): string => (int) $state < 10 ? 'danger' : 'success'),
-                Tables\Columns\IconColumn::make('is_visible')
+                Tables\Columns\ToggleColumn::make('is_visible')
                     ->label('Visibility')
-                    ->boolean()
-                    ->toggleable(),
+                    ->beforeStateUpdated(function (Product $record) {
+                        if ($record->is_visible) {
+                            Product::where('id', '!=', $record->id)->update(['is_visible' => false]);
+                        }
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
