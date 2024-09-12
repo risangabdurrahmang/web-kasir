@@ -6,6 +6,7 @@ use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater;
@@ -20,7 +21,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Tables\Filters\TrashedFilter;
 
-class OrderResource extends Resource
+class OrderResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Order::class;
 
@@ -70,8 +71,7 @@ class OrderResource extends Resource
                                 ->modalSubmitActionLabel('Create customer')
                                 ->modalWidth('lg');
                         }),
-                    Forms\Components\RichEditor::make('notes')
-                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('notes'),
                 ])->columns(2),
                 Forms\Components\Repeater::make('items')
                     ->relationship()
@@ -160,13 +160,18 @@ class OrderResource extends Resource
                     ->required(),
                 Section::make('Payment Information')->schema([
                     Forms\Components\Select::make('payment_id')
-                        ->relationship('payment', 'payment_method')
-                        ->native(false)
+                        ->label('Payment Method')
+                        ->relationship('payment', 'name') // Fetch from payment table
                         ->reactive()
                         ->required()
+                        ->afterStateUpdated(function (Get $get, Set $set) {
+                            $paymentMethod = $get('payment_id') ? Payment::find($get('payment_id'))->name : null;
+                            $set('is_cash', $paymentMethod === 'Cash');
+                        })
                         ->options(function () {
-                            return Payment::where('is_visible', true)->pluck('payment_method', 'id');
+                            return Payment::where('is_visible', true)->pluck('name', 'id');
                         }),
+
                     Forms\Components\TextInput::make('total')
                         ->numeric()
                         ->readOnly()
@@ -174,21 +179,24 @@ class OrderResource extends Resource
                         ->afterStateHydrated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
+
                     Forms\Components\TextInput::make('paid')
                         ->numeric()
                         ->live()
                         ->gte('total')
-                        ->visible(fn(Get $get): int => $get('payment_id') == 1)
+                        ->visible(fn(Get $get) => $get('is_cash'))
                         ->afterStateUpdated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
+
                     Forms\Components\TextInput::make('money_changes')
                         ->readOnly()
                         ->numeric()
-                        ->visible(fn(Get $get): int => $get('payment_id') == 1)
+                        ->visible(fn(Get $get) => $get('is_cash'))
                         ->afterStateHydrated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
+
                 ])->columns(2),
             ]);
     }
@@ -202,7 +210,7 @@ class OrderResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('payment.payment_method')
+                Tables\Columns\TextColumn::make('payment.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paid')
                     ->placeholder('-')
@@ -293,5 +301,21 @@ class OrderResource extends Resource
         } else {
             $set('money_changes', 0);
         }
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'restore',
+            'restore_any',
+            'delete',
+            'delete_any',
+            'force_delete',
+            'force_delete_any',
+        ];
     }
 }

@@ -6,6 +6,7 @@ use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Category;
 use App\Models\Product;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class ProductResource extends Resource
+class ProductResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Product::class;
 
@@ -162,6 +163,22 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'restore',
+            'restore_any',
+            'delete',
+            'delete_any',
+            'force_delete',
+            'force_delete_any',
         ];
     }
 }

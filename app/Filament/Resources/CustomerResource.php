@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CustomerResource extends Resource
+class CustomerResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Customer::class;
 
@@ -111,6 +112,22 @@ class CustomerResource extends Resource
             'index' => Pages\ListCustomers::route('/'),
             // 'create' => Pages\CreateCustomer::route('/create'),
             // 'edit' => Pages\EditCustomer::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'restore',
+            'restore_any',
+            'delete',
+            'delete_any',
+            'force_delete',
+            'force_delete_any',
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Actions\ActionGroup;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
-class CategoryResource extends Resource
+class CategoryResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Category::class;
 
@@ -123,6 +124,22 @@ class CategoryResource extends Resource
             'index' => Pages\ListCategories::route('/'),
             // 'create' => Pages\CreateCategory::route('/create'),
             // 'edit' => Pages\EditCategory::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'restore',
+            'restore_any',
+            'delete',
+            'delete_any',
+            'force_delete',
+            'force_delete_any',
         ];
     }
 }

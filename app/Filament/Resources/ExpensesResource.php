@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ExpensesResource\Pages;
 use App\Filament\Resources\ExpensesResource\RelationManagers;
 use App\Models\Expenses;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,13 +15,13 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class ExpensesResource extends Resource
+class ExpensesResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Expenses::class;
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationGroup = 'Shop';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
 
@@ -31,14 +32,12 @@ class ExpensesResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('notes')
-                    ->required()
-                    ->columnSpanFull(),
                 Forms\Components\DatePicker::make('date_expense')
                     ->required(),
                 Forms\Components\TextInput::make('amount')
                     ->required()
                     ->numeric(),
+                Forms\Components\Textarea::make('notes'),
             ]);
     }
 
@@ -106,6 +105,22 @@ class ExpensesResource extends Resource
             'index' => Pages\ListExpenses::route('/'),
             // 'create' => Pages\CreateExpenses::route('/create'),
             // 'edit' => Pages\EditExpenses::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'restore',
+            'restore_any',
+            'delete',
+            'delete_any',
+            'force_delete',
+            'force_delete_any',
         ];
     }
 }

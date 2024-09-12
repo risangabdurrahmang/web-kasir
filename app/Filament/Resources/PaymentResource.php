@@ -9,35 +9,25 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Storage;
 
 class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
 
-    protected static ?string $navigationGroup = 'Settings';
-
-    protected static ?int $navigationSort = 2;
-
-    protected static ?string $navigationIcon = 'heroicon-c-credit-card';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('payment_method')
+                Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\FileUpload::make('image')
-                    ->image(),
                 Forms\Components\Toggle::make('is_visible')
-                    ->label('Visible')
-                    ->default(false),
+                    ->required(),
             ]);
     }
 
@@ -45,17 +35,10 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('payment_method')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('image')
-                    ->placeholder('-'),
-                Tables\Columns\ToggleColumn::make('is_visible')
-                    ->label('Visibility')
-                    ->beforeStateUpdated(function (Payment $record) {
-                        if ($record->is_visible) {
-                            Payment::where('id', '!=', $record->id)->update(['is_visible' => false]);
-                        }
-                    }),
+                Tables\Columns\IconColumn::make('is_visible')
+                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -70,31 +53,15 @@ class PaymentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                TrashedFilter::make()
+                //
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                    Tables\Actions\RestoreAction::make(),
-                    Tables\Actions\ForceDeleteAction::make(),
-                ])
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
             ]);
     }
 

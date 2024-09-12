@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Order;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
@@ -11,6 +12,7 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class WidgetIncomesChart extends ChartWidget
 {
+    use HasWidgetShield;
     use InteractsWithPageFilters;
 
     protected static ?string $heading = 'Income';
