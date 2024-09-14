@@ -88,6 +88,7 @@ class ProductResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sku')
+                    ->placeholder('-')
                     ->label('SKU')
                     ->searchable()
                     ->sortable()
@@ -103,10 +104,8 @@ class ProductResource extends Resource implements HasShieldPermissions
                     ->color(fn(string $state): string => (int) $state < 10 ? 'danger' : 'success'),
                 Tables\Columns\ToggleColumn::make('is_visible')
                     ->label('Visibility')
-                    ->beforeStateUpdated(function (Product $record) {
-                        if ($record->is_visible) {
-                            Product::where('id', '!=', $record->id)->update(['is_visible' => false]);
-                        }
+                    ->beforeStateUpdated(function (Product $record, $state) {
+                        $record->update(['is_visible' => $state]);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

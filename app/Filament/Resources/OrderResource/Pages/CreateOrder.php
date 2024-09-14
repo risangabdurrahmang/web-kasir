@@ -20,19 +20,15 @@ class CreateOrder extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    // hook ketika data sudah dibuat maka kurangi stok produk
     protected function afterCreate(): void
     {
         $order = $this->record->load('items');
 
         DB::transaction(function () use ($order) {
             foreach ($order->items as $item) {
-
                 $product = $item->product;
-
                 if ($product) {
                     $product->decrement('stock', $item->quantity);
-
                     $product->save();
                 }
             }

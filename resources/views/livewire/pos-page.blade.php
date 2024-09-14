@@ -16,13 +16,13 @@
                         </div>
                         <input wire:model.live="search" type="search" id="default-search"
                             class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
-                            placeholder="Search Product" required />
+                            placeholder="Search product" required />
                     </div>
                 </div>
                 <!-- Product List -->
                 <div class="space-y-4">
                     @if ($products->isEmpty())
-                        <p class="text-xl text-center my-6">Produk Kosong</p>
+                        <p class="text-xl text-center my-6">Empty Product</p>
                     @else
                         <div class="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3">
                             @foreach ($products as $product)
@@ -43,7 +43,7 @@
                                             <span
                                                 class="text-lg sm:text-base md:text-sm font-semibold text-gray-850 dark:text-white">Rp.{{ Number::format($product->price) }}</span>
                                             <span
-                                                class="text-lg sm:text-base md:text-sm font-semibold text-gray-800 dark:text-white">Stok
+                                                class="text-lg sm:text-base md:text-sm font-semibold text-gray-800 dark:text-white">Stock
                                                 : {{ $product->stock }}</span>
                                         </div>
                                     </div>
@@ -55,9 +55,12 @@
                 </div>
             </div>
             <!-- Cart and Payment -->
-            <div class="mt-6 md:w-1/3 space-y-6 sm:mt-8 md:mt-0">
-                <form wire:submit.prevent="saveOrder">
-                    <x-filament::section class="flow-root mb-4">
+            <x-filament::section class="mt-6 md:w-1/3 space-y-6 sm:mt-8 md:mt-0">
+                <x-slot name="heading">
+                    Checkout Form
+                </x-slot>
+                <form wire:submit.prevent="cashPopup">
+                    <div class="flow-root">
                         @if (empty($cartItems))
                             <p class="text-sm text-center my-6">Empty Cart</p>
                         @else
@@ -91,57 +94,116 @@
                                 @endforeach
                             </div>
                         @endif
-                    </x-filament::section>
-                    {{ $this->checkoutForm }}
-                    <x-filament::button wire:click="checkoutValidate" color="warning" class="w-full mt-4">
-                        Checkout
-                    </x-filament::button>
-                    <!-- Modal -->
-                    <div x-data="{ showModal: @entangle('showModal') }" x-show="showModal"
-                        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                        @click.away="showModal = false">
-                        <!-- Main modal -->
-                        <div class="relative p-4 w-full max-w-md max-h-full" @click.away="showModal = false">
-                            <!-- Modal content -->
-                            <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg shadow" @click.stop>
-                                <div
-                                    class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                                        Payment Confirmation
-                                    </h3>
-                                    <button type="button" @click="showModal = false"
-                                        class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                        data-modal-hide="authentication-modal">
-                                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                            fill="none" viewBox="0 0 14 14">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                        </svg>
-                                        <span class="sr-only">Close modal</span>
-                                    </button>
-                                </div>
-                                <!-- Modal body -->
-                                <div class="p-4 md:p-5">
-                                    <div class="space-y-6">
-                                        @if ($payment_id && $payments->where('id', $payment_id)->first()->payment_method == 'Cash')
-                                            {{ $this->confirmForm }}
-                                        @elseif ($payment_id && $payments->where('id', $payment_id)->first()->payment_method == 'QRIS')
-                                            <div>
-                                                <img src="{{ asset('storage/' . $payments->where('id', $payment_id)->first()->image) }}"
-                                                    alt="Dana QRIS" class="mt-2 mx-auto h-60" />
-                                            </div>
-                                        @endif
-                                        <x-filament::button color="warning" type="submit" class="w-full">
-                                            Submit
-                                        </x-filament::button>
+                    </div>
+                    <!-- Customer Search -->
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        selectedId: @entangle('customer_id').defer,
+                        options: @js($customers),
+                        get filteredOptions() {
+                            if (!this.search.trim()) return this.options;
+                            return this.options.filter(option => option.name.toLowerCase().includes(this.search.toLowerCase()));
+                        },
+                        get selectedOption() {
+                            if (!this.selectedId) return null;
+                            return this.options.find(option => option.id === this.selectedId);
+                        },
+                        selectOption(option) {
+                            this.selectedId = option.id;
+                            this.search = option.name;
+                            this.open = false;
+                            @this.customer_id = option.id;
+                        }
+                    }">
+                        <div class="relative mt-6">
+                            <input type="text" x-model="search" @focus="open = true" @click.away="open = false"
+                                placeholder="Search customer"
+                                class="relative w-full text-normal border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-950 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:border-yellow-500 focus:ring-yellow-500">
+                            <div x-show="open" x-cloak
+                                class="absolute z-50 mt-1 max-h-52 w-full rounded-md bg-gray-50 dark:bg-gray-950 py-1 text-base shadow-lg">
+                                <ul class="max-h-52 overflow-auto">
+                                    <template x-for="option in filteredOptions" :key="option.id">
+                                        <li @click="selectOption(option)"
+                                            class="cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-300"
+                                            :class="{
+                                                'bg-yellow-500 text-black dark:text-white': selectedOption &&
+                                                    selectedOption
+                                                    .id === option.id
+                                            }">
+                                            <span x-text="option.name" class="font-normal block truncate"></span>
+                                        </li>
+                                    </template>
+                                    <li x-show="filteredOptions.length === 0"
+                                        class="cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
+                                        No customer found
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Payment Options -->
+                    <div class="mt-6 w-full">
+                        <x-filament::input.wrapper>
+                            <x-filament::input.select wire:model="payment_id">
+                                <option value="">Select payment</option>
+                                @foreach ($payments as $payment)
+                                    <option value="{{ $payment->id }}">{{ $payment->name }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+                    <dl class="flex items-center justify-between gap-4 py-4">
+                        <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
+                        <dd class="text-base font-bold text-gray-900 dark:text-white">Rp.
+                            {{ Number::format($this->getTotalPrice()) }}</dd>
+                    </dl>
+                    <div class="space-y-3">
+                        <x-filament::button color="warning" type="submit" class="w-full">
+                            Checkout
+                        </x-filament::button>
+                    </div>
+                </form>
+                <div x-data="{ showModal: @entangle('showModal') }" x-show="showModal"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                    @click.away="showModal = false">
+                    <!-- Main modal -->
+                    <div class="relative p-4 w-full max-w-md max-h-full" @click.away="showModal = false">
+                        <!-- Modal content -->
+                        <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg shadow" @click.stop>
+                            <div
+                                class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    Confirm Cash Payment
+                                </h3>
+                            </div>
+                            <!-- Modal body -->
+                            <div class="p-4 md:p-5">
+                                <div class="space-y-6">
+                                    <div>
+                                        <x-filament::input.wrapper>
+                                            <x-filament::input wire:model="paid" type="number" name="paid"
+                                                id="paid" placeholder="Dibayar"
+                                                wire:change="$set('paid', $event.target.value)" />
+                                        </x-filament::input.wrapper>
                                     </div>
+                                    <div>
+                                        <x-filament::input.wrapper>
+                                            <x-filament::input wire:model.lazy="money_changes"
+                                                value="{{ $money_changes }}" type="number" disabled readonly
+                                                name="money_changes" id="money_changes" placeholder="Kembalian" />
+                                        </x-filament::input.wrapper>
+                                    </div>
+                                    <x-filament::button wire:click="saveOrder" color="warning" type="submit"
+                                        class="w-full">
+                                        Submit
+                                    </x-filament::button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </form>
-                <x-filament-actions::modals />
-            </div>
+                </div>
+            </x-filament::section>
         </div>
     </article>
 </section>

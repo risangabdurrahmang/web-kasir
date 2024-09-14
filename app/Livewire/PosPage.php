@@ -7,142 +7,62 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 
-class PosPage extends Component implements HasForms
+class PosPage extends Component
 {
-    use InteractsWithForms;
     use WithPagination;
 
     public $customer_id;
     public $payment_id;
-    public $payments;
-    public $customers;
+    public $payments = '';
+    public $customers = [];
     public $cartItems = [];
     public $search = '';
-    public $paid = 0;
-    public $total = 0;
-    public $money_changes = 0;
+    public $paid;
+    public $money_changes;
     public $showModal = false;
 
     public function mount()
     {
         $this->loadPayments();
         $this->loadCustomers();
-        $this->calculateTotal();
+        $this->loadProducts();
     }
 
+    // ambil data customer dari database
     public function loadCustomers()
     {
-        $this->customers = Customer::all();
+        $this->customers = Customer::all()->toArray();
     }
 
+    // ambil data pembayaran dari database
     public function loadPayments()
     {
-        $this->payments = Payment::all();
+        $this->payments = Payment::where('is_visible', true)->get();
     }
 
+    // ambil data produk dari database
     public function loadProducts()
     {
         return Product::where('stock', '>', 0)
+            ->where('is_visible', true)
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%');
             })
             ->paginate(6);
     }
 
-    public function checkoutForm(Form $form): Form
-    {
-        return $form->schema([
-            Section::make()->schema([
-                Select::make('customer_id')
-                    ->searchable()
-                    ->relationship('customer', 'name')
-                    ->required()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->required()
-                            ->placeholder('Enter name')
-                            ->columns(1),
-                        Select::make('gender')
-                            ->placeholder('Select gender')
-                            ->options([
-                                'Laki-laki' => 'Laki-laki',
-                                'Perempuan' => 'Perempuan',
-                            ])
-                            ->required()
-                            ->native(false)
-                            ->columns(1),
-                        TextInput::make('email')
-                            ->email()
-                            ->unique()
-                            ->required()
-                            ->placeholder('Enter email')
-                            ->columns(1),
-                        TextInput::make('phone')
-                            ->required()
-                            ->placeholder('Enter phone')
-                            ->columns(1),
-                    ])->columns(2)
-                    ->createOptionAction(function (Action $action) {
-                        return $action
-                            ->modalHeading('Create customer')
-                            ->modalSubmitActionLabel('Create customer')
-                            ->modalWidth('lg');
-                    }),
-                Select::make('payment_id')
-                    ->relationship('payment', 'payment_method')
-                    ->native(false)
-                    ->required()
-                    ->options(function () {
-                        return Payment::where('is_visible', true)->pluck('payment_method', 'id');
-                    }),
-            ]),
-        ])->model(Order::class);
-    }
-
-    public function confirmForm(Form $form): Form
-    {
-        return $form->schema([
-            TextInput::make('total')
-                ->numeric()
-                ->disabled()
-                ->default($this->total),
-            TextInput::make('paid')
-                ->numeric()
-                ->required()
-                ->live(onBlur: true)
-                ->afterStateUpdated(fn($state) => $this->updatedPaid($state)),
-            TextInput::make('money_changes')
-                ->numeric()
-                ->disabled(),
-        ])->model(Order::class);
-    }
-
-    protected function getForms(): array
-    {
-        return [
-            'checkoutForm',
-            'confirmForm',
-        ];
-    }
-
+    // menambah produk ke cart
     public function addItem($productId)
     {
         $product = Product::find($productId);
 
-        if ($product && $product->stock > 0) {
+        if ($product) {
             $key = $product->id;
 
             if (isset($this->cartItems[$key])) {
@@ -151,29 +71,130 @@ class PosPage extends Component implements HasForms
                 $this->cartItems[$key] = [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'image' => $product->image,
                     'price' => $product->price,
                     'quantity' => 1,
+                    'image' => $product->image,
                     'stock' => $product->stock,
                 ];
             }
         }
-        $this->calculateTotal();
     }
 
+    // menghapus produk dari cart
     public function removeItem($key)
     {
         if (isset($this->cartItems[$key])) {
-            unset($this->cartItems[$key]);
+            if ($this->cartItems[$key]['quantity'] > 1) {
+                $this->cartItems[$key]['quantity'] -= 1;
+            } else {
+                unset($this->cartItems[$key]);
+            }
         }
-        $this->calculateTotal();
     }
 
-    public function checkoutValidate()
+    // menghitung total belanja
+    public function getTotalPrice()
+    {
+        return array_reduce($this->cartItems, function ($total, $item) {
+            return $total + ($item['price'] * $item['quantity']);
+        }, 0);
+    }
+
+    // memperbarui nilai kembalian ketika nominal bayar diinputkan
+    public function updatedPaid($value)
+    {
+        $this->money_changes = $this->calculateMoneyChanges($value);
+    }
+
+    // menghitung kembalian
+    public function calculateMoneyChanges($paid)
+    {
+        $totalPrice = $this->getTotalPrice();
+        $paidAmount = (float) $paid;
+        $money_changes = $paidAmount - $totalPrice;
+        return $money_changes;
+    }
+
+    // menyimpan pesanan
+    public function saveOrder()
+    {
+        $payment = Payment::find($this->payment_id);
+
+        $rules = [
+            'customer_id' => 'required',
+            'payment_id' => 'required',
+        ];
+
+        $messages = [
+            'customer_id.required' => 'Customer must be filled in',
+            'payment_id.required' => 'Payment must be filled in',
+        ];
+
+        if ($payment && $payment->name === 'Cash') {
+            $rules['paid'] = 'required|numeric|min:' . $this->getTotalPrice();
+            $messages['paid.required'] = 'Paid must be filled in';
+            $messages['paid.min'] = 'Paid payment must be at least the total price';
+        }
+
+        try {
+            $this->validate($rules, $messages);
+
+            if ($payment->name !== 'Cash') {
+                $this->paid = 0;
+                $this->money_changes = 0;
+            }
+
+            DB::transaction(function () {
+                $order = Order::create([
+                    'customer_id' => $this->customer_id,
+                    'payment_id' => $this->payment_id,
+                    'paid' => $this->paid,
+                    'money_changes' => $this->money_changes,
+                    'total' => $this->getTotalPrice(),
+                ]);
+
+                foreach ($this->cartItems as $cartItem) {
+                    $product = Product::find($cartItem['id']);
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $cartItem['quantity'],
+                        'sub_total' => $product->price * $cartItem['quantity'],
+                    ]);
+
+                    $product->decrement('stock', $cartItem['quantity']);
+                }
+            });
+
+            Notification::make()
+                ->title('Order Saved Successfully')
+                ->success()
+                ->send();
+
+            $this->reset();
+            return redirect('/admin/orders');
+        } catch (ValidationException $e) {
+            Notification::make()
+                ->title('Error Validation')
+                ->danger()
+                ->body($e->getMessage())
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error')
+                ->danger()
+                ->body($e->getMessage())
+                ->send();
+        }
+    }
+
+    // popup modal untuk pembayaran cash/tunai dengan berisi paid(nominal bayar) dan money_changes(kembalian)
+    public function cashPopup()
     {
         if (empty($this->cartItems)) {
             Notification::make()
-                ->title('Keranjang belanja kosong')
+                ->title('Cart is empty')
                 ->danger()
                 ->send();
             return;
@@ -184,99 +205,16 @@ class PosPage extends Component implements HasForms
                 'customer_id' => 'required',
                 'payment_id' => 'required',
             ], [
-                'customer_id.required' => 'Customer required',
-                'payment_id.required' => 'Payment required',
+                'customer_id.required' => 'Customer must be filled in',
+                'payment_id.required' => 'Payment must be filled in',
             ]);
 
-            $this->showModal = true;
-        } catch (ValidationException $e) {
-            Notification::make()
-                ->title('Error')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Error')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
-        }
-    }
-
-    public function calculateTotal()
-    {
-        return $this->total = array_reduce($this->cartItems, function ($total, $item) {
-            return $total + ($item['price'] * $item['quantity']);
-        }, 0);
-    }
-
-    public function updatedPaid($value)
-    {
-        $this->money_changes = $this->calculateMoneyChanges($value);
-    }
-
-    public function calculateMoneyChanges($paid)
-    {
-        $totalPrice = $this->calculateTotal();
-        if ($paid < $totalPrice) {
-            $this->addError('paid', 'Jumlah pembayaran tidak bisa kurang dari total harga.');
-            return null;
-        }
-        $money_changes = $paid - $totalPrice;
-        return $money_changes;
-    }
-
-    public function saveOrder()
-    {
-        if (empty($this->cartItems)) {
-            Notification::make()
-                ->title('Empty Cart')
-                ->danger()
-                ->send();
-            return;
-        }
-
-        $payment = Payment::find($this->payment_id);
-
-        $rules = ['customer_id' => 'required'];
-        $messages = ['customer_id.required' => 'Customer required'];
-
-        if ($payment->payment_method !== 'QRIS') {
-            $rules['paid'] = 'required';
-            $messages['paid.required'] = 'Payment required';
-        }
-
-        try {
-            $this->validate($rules, $messages);
-
-            DB::transaction(function () use ($payment) {
-                $order = Order::create([
-                    'customer_id' => $this->customer_id,
-                    'payment_id' => $this->payment_id,
-                    'paid' => $payment->payment_method === 'QRIS' ? 0 : $this->paid,
-                    'money_changes' => $this->money_changes,
-                    'total' => $this->total,
-                ]);
-
-                foreach ($this->cartItems as $cartItem) {
-                    $product = Product::find($cartItem['id']);
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $product->id,
-                        'quantity' => $cartItem['quantity'],
-                        'sub_total' => $product->price * $cartItem['quantity'],
-                    ]);
-                    $product->decrement('stock', $cartItem['quantity']);
-                }
-            });
-
-            Notification::make()
-                ->title('Saved Sucessfully')
-                ->success()
-                ->send();
-
-            $this->reset();
+            $payment = Payment::find($this->payment_id);
+            if ($payment && $payment->name === 'Cash') {
+                $this->showModal = true;
+            } else {
+                $this->saveOrder();
+            }
         } catch (ValidationException $e) {
             Notification::make()
                 ->title('Error Validation')
@@ -285,7 +223,7 @@ class PosPage extends Component implements HasForms
                 ->send();
         } catch (\Exception $e) {
             Notification::make()
-                ->title('Failed to Save')
+                ->title('Error')
                 ->danger()
                 ->body($e->getMessage())
                 ->send();

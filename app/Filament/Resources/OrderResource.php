@@ -161,7 +161,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                 Section::make('Payment Information')->schema([
                     Forms\Components\Select::make('payment_id')
                         ->label('Payment Method')
-                        ->relationship('payment', 'name') // Fetch from payment table
+                        ->relationship('payment', 'name')
                         ->reactive()
                         ->required()
                         ->afterStateUpdated(function (Get $get, Set $set) {
@@ -171,7 +171,6 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ->options(function () {
                             return Payment::where('is_visible', true)->pluck('name', 'id');
                         }),
-
                     Forms\Components\TextInput::make('total')
                         ->numeric()
                         ->readOnly()
@@ -179,7 +178,6 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ->afterStateHydrated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
-
                     Forms\Components\TextInput::make('paid')
                         ->numeric()
                         ->live()
@@ -188,7 +186,6 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ->afterStateUpdated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
-
                     Forms\Components\TextInput::make('money_changes')
                         ->readOnly()
                         ->numeric()
@@ -196,7 +193,6 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ->afterStateHydrated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
-
                 ])->columns(2),
             ]);
     }
@@ -280,6 +276,7 @@ class OrderResource extends Resource implements HasShieldPermissions
         ];
     }
 
+    // fungsi untuk menghitung total harga dan kembalian berdasarkan nominal pembayaran
     public static function updateTotals(Get $get, Set $set): void
     {
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));

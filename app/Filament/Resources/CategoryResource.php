@@ -59,15 +59,10 @@ class CategoryResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('description')
-                //     ->placeholder('-')
-                //     ->searchable(),
                 Tables\Columns\ToggleColumn::make('is_visible')
                     ->label('Visibility')
-                    ->beforeStateUpdated(function (Category $record) {
-                        if ($record->is_visible) {
-                            Category::where('id', '!=', $record->id)->update(['is_visible' => false]);
-                        }
+                    ->beforeStateUpdated(function (Category $record, $state) {
+                        $record->update(['is_visible' => $state]);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
