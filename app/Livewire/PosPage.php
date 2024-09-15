@@ -61,11 +61,17 @@ class PosPage extends Component
     public function addItem($productId)
     {
         $product = Product::find($productId);
-
         if ($product) {
             $key = $product->id;
-
             if (isset($this->cartItems[$key])) {
+                if ($this->cartItems[$key]['quantity'] + 1 > $product->stock) {
+                    Notification::make()
+                        ->title('Error')
+                        ->body('Order quantity exceeds available stock')
+                        ->danger()
+                        ->send();
+                    return;
+                }
                 $this->cartItems[$key]['quantity'] += 1;
             } else {
                 $this->cartItems[$key] = [
@@ -126,13 +132,13 @@ class PosPage extends Component
         ];
 
         $messages = [
-            'customer_id.required' => 'Customer must be filled in',
-            'payment_id.required' => 'Payment must be filled in',
+            'customer_id.required' => 'Customer field is required',
+            'payment_id.required' => 'Payment field is required',
         ];
 
         if ($payment && $payment->name === 'Cash') {
             $rules['paid'] = 'required|numeric|min:' . $this->getTotalPrice();
-            $messages['paid.required'] = 'Paid must be filled in';
+            $messages['paid.required'] = 'Paid field is required';
             $messages['paid.min'] = 'Paid payment must be at least the total price';
         }
 
@@ -205,8 +211,8 @@ class PosPage extends Component
                 'customer_id' => 'required',
                 'payment_id' => 'required',
             ], [
-                'customer_id.required' => 'Customer must be filled in',
-                'payment_id.required' => 'Payment must be filled in',
+                'customer_id.required' => 'Customer field is required',
+                'payment_id.required' => 'Payment field is required',
             ]);
 
             $payment = Payment::find($this->payment_id);
