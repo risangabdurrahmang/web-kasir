@@ -45,7 +45,7 @@ class ProductResource extends Resource implements HasShieldPermissions
                         ->native(false)
                         ->required()
                         ->options(function () {
-                            return Category::where('is_visible', true)->pluck('name', 'id');
+                            return Category::where('is_active', true)->pluck('name', 'id');
                         }),
                     Forms\Components\TextInput::make('name')
                         ->required()
@@ -73,8 +73,7 @@ class ProductResource extends Resource implements HasShieldPermissions
                     Forms\Components\FileUpload::make('image')
                         ->image()
                         ->required(),
-                    Forms\Components\Toggle::make('is_visible')
-                        ->label('Visible')
+                    Forms\Components\Toggle::make('is_active')
                         ->default(false),
                 ])->columnSpan(1)
             ])->columns(2);
@@ -101,11 +100,10 @@ class ProductResource extends Resource implements HasShieldPermissions
                     ->numeric()
                     ->sortable()
                     ->badge()
-                    ->color(fn(string $state): string => (int) $state < 10 ? 'danger' : 'success'),
-                Tables\Columns\ToggleColumn::make('is_visible')
-                    ->label('Visibility')
+                    ->color(fn(string $state): string => (int) $state < 10 ? 'danger' : ((int) $state < 20 ? 'warning' : 'success')),
+                Tables\Columns\ToggleColumn::make('is_active')
                     ->beforeStateUpdated(function (Product $record, $state) {
-                        $record->update(['is_visible' => $state]);
+                        $record->update(['is_active' => $state]);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

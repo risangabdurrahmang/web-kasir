@@ -26,28 +26,4 @@ class EditOrder extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
-
-    protected function afterSave(): void
-    {
-        DB::transaction(function () {
-            $order = Order::find($this->record->id);
-            $orderItems = $order->orderItems;
-
-            if ($orderItems) {
-                foreach ($orderItems as $orderItem) {
-                    $product = Product::find($orderItem->product_id);
-                    $previousQuantity = $orderItem->getOriginal('quantity');
-                    $currentQuantity = $orderItem->quantity;
-
-                    if ($currentQuantity > $previousQuantity) {
-                        $product->stock -= $currentQuantity - $previousQuantity;
-                    } elseif ($currentQuantity < $previousQuantity) {
-                        $product->stock += $previousQuantity - $currentQuantity;
-                    }
-
-                    $product->save();
-                }
-            }
-        });
-    }
 }

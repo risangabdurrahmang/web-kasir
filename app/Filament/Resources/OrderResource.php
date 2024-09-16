@@ -80,7 +80,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                         Forms\Components\Select::make('product_id')
                             ->options(function () {
                                 return Product::where('stock', '>', 0)
-                                    ->where('is_visible', true)
+                                    ->where('is_active', true)
                                     ->pluck('name', 'id');
                             })
                             ->required()
@@ -168,8 +168,12 @@ class OrderResource extends Resource implements HasShieldPermissions
                             $paymentMethod = $get('payment_id') ? Payment::find($get('payment_id'))->name : null;
                             $set('is_cash', $paymentMethod === 'Cash');
                         })
+                        ->afterStateHydrated(function (Get $get, Set $set) {
+                            $paymentMethod = $get('payment_id') ? Payment::find($get('payment_id'))->name : null;
+                            $set('is_cash', $paymentMethod === 'Cash');
+                        })
                         ->options(function () {
-                            return Payment::where('is_visible', true)->pluck('name', 'id');
+                            return Payment::where('is_active', true)->pluck('name', 'id');
                         }),
                     Forms\Components\TextInput::make('total')
                         ->numeric()
@@ -271,7 +275,6 @@ class OrderResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
