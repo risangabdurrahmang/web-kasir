@@ -43,14 +43,14 @@ class PosPage extends Component
     // ambil data pembayaran dari database
     public function loadPayments()
     {
-        $this->payments = Payment::where('is_visible', true)->get();
+        $this->payments = Payment::where('is_active', true)->get();
     }
 
     // ambil data produk dari database
     public function loadProducts()
     {
         return Product::where('stock', '>', 0)
-            ->where('is_visible', true)
+            ->where('is_active', true)
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%');
             })

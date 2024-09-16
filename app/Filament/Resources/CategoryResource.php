@@ -47,8 +47,7 @@ class CategoryResource extends Resource implements HasShieldPermissions
                     ->unique(Category::class, 'slug', ignoreRecord: true),
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_visible')
-                    ->label('Visible')
+                Forms\Components\Toggle::make('is_active')
                     ->default(false),
             ]);
     }
@@ -59,10 +58,9 @@ class CategoryResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\ToggleColumn::make('is_visible')
-                    ->label('Visibility')
+                Tables\Columns\ToggleColumn::make('is_active')
                     ->beforeStateUpdated(function (Category $record, $state) {
-                        $record->update(['is_visible' => $state]);
+                        $record->update(['is_active' => $state]);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
