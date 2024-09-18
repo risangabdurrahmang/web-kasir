@@ -31,8 +31,7 @@ class PaymentResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('is_visible')
-                    ->label('Visible')
+                Forms\Components\Toggle::make('is_active')
                     ->default(false),
             ]);
     }
@@ -43,10 +42,9 @@ class PaymentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\ToggleColumn::make('is_visible')
-                    ->label('Visibility')
+                Tables\Columns\ToggleColumn::make('is_active')
                     ->beforeStateUpdated(function (Payment $record, $state) {
-                        $record->update(['is_visible' => $state]);
+                        $record->update(['is_active' => $state]);
                     }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

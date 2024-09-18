@@ -24,7 +24,7 @@ class Product extends Model
         'stock',
         'description',
         'image',
-        'is_visible',
+        'is_active',
     ];
 
     protected static function boot()

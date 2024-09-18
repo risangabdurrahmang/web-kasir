@@ -15,7 +15,7 @@ class Payment extends Model
 
     protected $fillable = [
         'name',
-        'is_visible',
+        'is_active',
     ];
 
     public function order(): HasMany
