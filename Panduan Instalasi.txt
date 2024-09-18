@@ -1,0 +1,27 @@
+1. Estrak file zip
+   -Laragon : taruh hasil estrak pada folder www
+   -Xampp : hasil estrak dapat disimpan sesuai keinginan
+
+2. Install php dependencies > composer install
+
+3. Install javascript dependencies > npm install
+
+4. Copy atau rename file .env dan sesuaikan konfigurasinya
+   Jika menggunakan laragon, ubah app_url di .env sesuai dengan sama project contoh (http://laravel-app.test)
+
+5. Generate key aplikasi > php artisan key:generate
+
+6. Link storage: php artisan storage:link
+
+7. Menjalankan migrasi dan seeder > php artisan migrate --seed
+   Akun admin panel filament:
+   -Admin > email: admin@example.com, pw: password
+
+8. Sinkronisasi permission filament shield dengan admin panel > php artisan shield:install
+
+8. Run development server :
+   -Menjalankan halaman POS > npm run dev
+   -Aplikasi untuk server web lokal :
+    *Laragon : buka laragon, klik kanan, pilih www kemudian pilih project atau
+              bisa langsung mengetikkan url sesuai dengan nama project (laravel-app.test)
+    *Xampp : php artisan serve

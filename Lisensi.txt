@@ -1,0 +1,15 @@
+Perjanjian Lisensi untuk Aplikasi Situs Web Point of Sale
+
+1. Pemberian Lisensi
+Penerima Lisensi diizinkan untuk menggunakan, memodifikasi, dan memasukkan kode sumber ke dalam proyek klien tanpa batasan, asalkan penggunaan tersebut mematuhi ketentuan yang diuraikan dalam Perjanjian ini.
+2. Perbuatan yang Dilarang
+Penerima Lisensi tidak boleh menjual, menjual kembali, atau mendistribusikan kembali kode sumber Produk dalam bentuk aslinya atau yang dimodifikasi.
+Penerima Lisensi tidak boleh mensublisensikan, mengalihkan, atau mentransfer lisensi kepada pihak ketiga mana pun.
+Penerima Lisensi tidak boleh menggunakan Produk untuk membuat produk pesaing untuk dijual kembali atau didistribusikan.
+3. Ruang Lingkup Penggunaan
+Produk dapat digunakan dalam proyek lepas atau klien dalam jumlah tidak terbatas.
+Penerima Lisensi dapat membebankan biaya kepada klien untuk proyek yang menyertakan Produk, namun Penerima Lisensi tidak dapat menjual kembali atau mendistribusikan ulang kode sumber sebagai item yang berdiri sendiri.
+4. Kepemilikan
+Produk tetap menjadi milik Pemberi Lisensi. Perjanjian ini memberikan hak terbatas kepada Penerima Lisensi untuk menggunakan kode sumber, namun tidak mengalihkan kepemilikan atau hak kekayaan intelektual apa pun.
+
+Dengan menggunakan atau membeli Produk, Penerima Lisensi menyetujui ketentuan Perjanjian Lisensi ini.
