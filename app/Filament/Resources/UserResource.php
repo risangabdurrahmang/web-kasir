@@ -130,7 +130,8 @@ class UserResource extends Resource implements HasShieldPermissions
             'create',
             'update',
             'delete',
-            'delete_any'
+            'delete_any',
+            'upload_files'
         ];
     }
 }

@@ -178,6 +178,7 @@ class ProductResource extends Resource implements HasShieldPermissions
             'delete_any',
             'force_delete',
             'force_delete_any',
+            'upload_files'
         ];
     }
 }
