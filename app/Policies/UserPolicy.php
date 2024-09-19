@@ -141,4 +141,9 @@ class UserPolicy
     {
         return $user->can('reorder_user');
     }
+
+    public function uploadFiles(User $user): bool
+    {
+        return $user->can('upload_files');
+    }
 }
