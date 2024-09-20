@@ -41,7 +41,9 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->relationship('roles', 'name')
                     ->preload()
                     ->searchable(),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
+                Forms\Components\DateTimePicker::make('email_verified_at')
+                    ->default(now())
+                    ->required(),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->maxLength(255)
