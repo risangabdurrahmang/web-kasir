@@ -42,8 +42,7 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->preload()
                     ->searchable(),
                 Forms\Components\DateTimePicker::make('email_verified_at')
-                    ->default(now())
-                    ->required(),
+                    ->default(now()),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->maxLength(255)
