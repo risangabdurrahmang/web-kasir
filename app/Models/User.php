@@ -17,7 +17,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, '@example.com') && $this->hasVerifiedEmail();
+        return str_ends_with($this->email, '@example.com') || $this->hasVerifiedEmail();
     }
     /**
      * The attributes that are mass assignable.
@@ -28,7 +28,6 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'email_verified_at',
     ];
 
     /**
