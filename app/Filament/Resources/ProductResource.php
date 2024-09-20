@@ -73,6 +73,7 @@ class ProductResource extends Resource implements HasShieldPermissions
                     Forms\Components\FileUpload::make('image')
                         ->disk('public')
                         ->maxSize(5120)
+                        ->visibility('public')
                         ->image()
                         ->required(),
                     Forms\Components\Toggle::make('is_active')
@@ -177,8 +178,7 @@ class ProductResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'force_delete',
-            'force_delete_any',
-            'upload_files'
+            'force_delete_any'
         ];
     }
 }
