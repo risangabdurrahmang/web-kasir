@@ -109,11 +109,11 @@ class PosPage extends Component
     // update field money changes when paid input
     public function updatedPaid($value)
     {
-        $this->change = $this->calculateMoneyChanges($value);
+        $this->change = $this->calculateChange($value);
     }
 
-    // count money changes
-    public function calculateMoneyChanges($paid)
+    // count change
+    public function calculateChange($paid)
     {
         $totalPrice = $this->getTotalPrice();
         $paidAmount = (float) $paid;
