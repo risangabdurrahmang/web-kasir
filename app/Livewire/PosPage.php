@@ -34,19 +34,19 @@ class PosPage extends Component
         $this->loadProducts();
     }
 
-    // ambil data customer dari database
+    // take data customer from database
     public function loadCustomers()
     {
         $this->customers = Customer::all()->toArray();
     }
 
-    // ambil data pembayaran dari database
+    // take data payment from database
     public function loadPayments()
     {
-        $this->payments = Payment::where('is_active', true)->get();
+        $this->payments = Payment::all();
     }
 
-    // ambil data produk dari database
+    // take data product from database
     public function loadProducts()
     {
         return Product::where('stock', '>', 0)
@@ -57,7 +57,7 @@ class PosPage extends Component
             ->paginate(6);
     }
 
-    // menambah produk ke cart
+    // add product to cart
     public function addItem($productId)
     {
         $product = Product::find($productId);
@@ -86,7 +86,7 @@ class PosPage extends Component
         }
     }
 
-    // menghapus produk dari cart
+    // remove product from cart
     public function removeItem($key)
     {
         if (isset($this->cartItems[$key])) {
@@ -98,7 +98,7 @@ class PosPage extends Component
         }
     }
 
-    // menghitung total belanja
+    // count total price
     public function getTotalPrice()
     {
         return array_reduce($this->cartItems, function ($total, $item) {
@@ -106,13 +106,13 @@ class PosPage extends Component
         }, 0);
     }
 
-    // memperbarui nilai kembalian ketika nominal bayar diinputkan
+    // update field money changes when paid input
     public function updatedPaid($value)
     {
         $this->money_changes = $this->calculateMoneyChanges($value);
     }
 
-    // menghitung kembalian
+    // count money changes
     public function calculateMoneyChanges($paid)
     {
         $totalPrice = $this->getTotalPrice();
@@ -121,7 +121,7 @@ class PosPage extends Component
         return $money_changes;
     }
 
-    // menyimpan pesanan
+    // save order
     public function saveOrder()
     {
         $payment = Payment::find($this->payment_id);
@@ -168,8 +168,6 @@ class PosPage extends Component
                         'quantity' => $cartItem['quantity'],
                         'sub_total' => $product->price * $cartItem['quantity'],
                     ]);
-
-                    $product->decrement('stock', $cartItem['quantity']);
                 }
             });
 
@@ -195,7 +193,7 @@ class PosPage extends Component
         }
     }
 
-    // popup modal untuk pembayaran cash/tunai dengan berisi paid(nominal bayar) dan money_changes(kembalian)
+    // show popup modal when payment cash selected and contain paid dan money changes field
     public function cashPopup()
     {
         if (empty($this->cartItems)) {
