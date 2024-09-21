@@ -36,7 +36,8 @@ class UserResource extends Resource implements HasShieldPermissions
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(User::class, 'email', ignoreRecord: true),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
                     ->preload()

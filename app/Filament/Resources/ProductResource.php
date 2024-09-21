@@ -71,8 +71,6 @@ class ProductResource extends Resource implements HasShieldPermissions
                 ])->columnSpan(1),
                 Section::make('Product Information')->schema([
                     Forms\Components\FileUpload::make('image')
-                        ->disk('public')
-                        ->visibility('public')
                         ->image()
                         ->required(),
                     Forms\Components\Toggle::make('is_active')
