@@ -95,7 +95,7 @@ class CustomerPolicy
      */
     public function replicate(User $user, Customer $customer): bool
     {
-        return $user->can('replicate_customer');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class CustomerPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_customer');
+        return $user->can('{{ Reorder }}');
     }
 }
