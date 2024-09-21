@@ -183,15 +183,15 @@
                                     <div>
                                         <x-filament::input.wrapper>
                                             <x-filament::input wire:model="paid" type="number" name="paid"
-                                                id="paid" placeholder="Dibayar"
+                                                id="paid" placeholder="Paid"
                                                 wire:change="$set('paid', $event.target.value)" />
                                         </x-filament::input.wrapper>
                                     </div>
                                     <div>
                                         <x-filament::input.wrapper>
-                                            <x-filament::input wire:model.lazy="money_changes"
-                                                value="{{ $money_changes }}" type="number" disabled readonly
-                                                name="money_changes" id="money_changes" placeholder="Kembalian" />
+                                            <x-filament::input wire:model.lazy="change" value="{{ $change }}"
+                                                type="number" disabled readonly name="change" id="change"
+                                                placeholder="Change" />
                                         </x-filament::input.wrapper>
                                     </div>
                                     <x-filament::button wire:click="saveOrder" color="warning" type="submit"

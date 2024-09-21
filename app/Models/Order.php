@@ -20,7 +20,7 @@ class Order extends Model
         'notes',
         'customer_id',
         'paid',
-        'money_changes',
+        'change',
         'total',
     ];
 
