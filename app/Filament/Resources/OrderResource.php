@@ -190,7 +190,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ->afterStateUpdated(function (Get $get, Set $set) {
                             self::updateTotals($get, $set);
                         }),
-                    Forms\Components\TextInput::make('money_changes')
+                    Forms\Components\TextInput::make('change')
                         ->readOnly()
                         ->numeric()
                         ->visible(fn(Get $get) => $get('is_cash'))
@@ -207,7 +207,7 @@ class OrderResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Order Date')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('payment.name')
@@ -217,7 +217,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                     ->numeric()
                     ->sortable()
                     ->money('IDR', locale: 'id'),
-                Tables\Columns\TextColumn::make('money_changes')
+                Tables\Columns\TextColumn::make('change')
                     ->placeholder('-')
                     ->numeric()
                     ->sortable()
@@ -279,7 +279,7 @@ class OrderResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    // fungsi untuk menghitung total harga dan kembalian berdasarkan nominal pembayaran
+    // count total from paid - change
     public static function updateTotals(Get $get, Set $set): void
     {
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
@@ -296,10 +296,10 @@ class OrderResource extends Resource implements HasShieldPermissions
         $paid = intval($get('paid'));
 
         if ($paid > $total) {
-            $moneyChanges = $paid - intval($total);
-            $set('money_changes', number_format($moneyChanges, 0, '.', ''));
+            $change = $paid - intval($total);
+            $set('change', number_format($change, 0, '.', ''));
         } else {
-            $set('money_changes', 0);
+            $set('change', 0);
         }
     }
 

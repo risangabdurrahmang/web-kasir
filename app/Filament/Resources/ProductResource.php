@@ -88,12 +88,6 @@ class ProductResource extends Resource implements HasShieldPermissions
                 Tables\Columns\ImageColumn::make('image'),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('sku')
-                    ->placeholder('-')
-                    ->label('SKU')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('price')
                     ->numeric()
                     ->sortable()
