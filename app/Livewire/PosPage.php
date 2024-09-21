@@ -24,7 +24,7 @@ class PosPage extends Component
     public $cartItems = [];
     public $search = '';
     public $paid;
-    public $money_changes;
+    public $change;
     public $showModal = false;
 
     public function mount()
@@ -109,16 +109,16 @@ class PosPage extends Component
     // update field money changes when paid input
     public function updatedPaid($value)
     {
-        $this->money_changes = $this->calculateMoneyChanges($value);
+        $this->change = $this->calculateChange($value);
     }
 
     // count money changes
-    public function calculateMoneyChanges($paid)
+    public function calculateChange($paid)
     {
         $totalPrice = $this->getTotalPrice();
         $paidAmount = (float) $paid;
-        $money_changes = $paidAmount - $totalPrice;
-        return $money_changes;
+        $change = $paidAmount - $totalPrice;
+        return $change;
     }
 
     // save order
@@ -147,7 +147,7 @@ class PosPage extends Component
 
             if ($payment->name !== 'Cash') {
                 $this->paid = 0;
-                $this->money_changes = 0;
+                $this->change = 0;
             }
 
             DB::transaction(function () {
@@ -155,7 +155,7 @@ class PosPage extends Component
                     'customer_id' => $this->customer_id,
                     'payment_id' => $this->payment_id,
                     'paid' => $this->paid,
-                    'money_changes' => $this->money_changes,
+                    'change' => $this->change,
                     'total' => $this->getTotalPrice(),
                 ]);
 

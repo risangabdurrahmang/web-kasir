@@ -17,7 +17,7 @@ return new class extends Migration
             $table->longText('notes')->nullable();
             $table->foreignId('payment_id')->constrained('payments')->onDelete('cascade');
             $table->integer('paid');
-            $table->integer('money_changes');
+            $table->integer('change');
             $table->decimal('total', 10, 2);
             $table->timestamps();
             $table->softDeletes();
