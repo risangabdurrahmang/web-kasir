@@ -2,14 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\OrderResource;
-use App\Filament\Resources\ProductResource;
-use Awcodes\Overlook\OverlookPlugin;
-use Awcodes\Overlook\Widgets\OverlookWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -27,6 +22,7 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->favicon(asset('favicon.ico'))
             ->default()
             ->id('admin')
             ->path('admin')
