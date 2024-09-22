@@ -207,7 +207,7 @@ class OrderResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Order Date')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('payment.name')

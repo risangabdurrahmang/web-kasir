@@ -41,7 +41,8 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->relationship('roles', 'name')
                     ->preload()
                     ->searchable(),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
+                Forms\Components\DateTimePicker::make('email_verified_at')
+                    ->default(now()),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->maxLength(255)
@@ -61,9 +62,6 @@ class UserResource extends Resource implements HasShieldPermissions
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
