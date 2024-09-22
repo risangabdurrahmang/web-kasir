@@ -26,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Model::unguard();
         OrderItem::observe(OrderItemObserver::class);
     }
 }
