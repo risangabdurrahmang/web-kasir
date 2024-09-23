@@ -68,15 +68,15 @@
                                 @foreach ($cartItems ?? [] as $key => $value)
                                     <div class="flex justify-between p-2">
                                         <div class="flex justify-between gap-4">
-                                            <div class="h-full w-16 rounded-md">
+                                            <div class="h-24 w-24 rounded-md overflow-hidden">
                                                 <img src="{{ asset('storage/' . $value['image']) }}"
                                                     alt="{{ $value['name'] . ' image' }}"
-                                                    class="h-full w-full object-cover object-center rounded-md">
+                                                    class="h-full w-full object-contain object-center">
                                             </div>
-                                            <div class="space-y-2">
+                                            <div class="space-y-2 flex-1">
                                                 <h3 class="text-sm">{{ $value['name'] }}</h3>
                                                 <h3 class="text-xs">Rp. {{ Number::format($value['price']) }}</h3>
-                                                <div class="flex items-center">
+                                                <div class="flex items-center mt-auto">
                                                     <x-filament::button size="xs"
                                                         wire:click="removeItem('{{ $key }}')" type="button"
                                                         color="gray" icon="heroicon-m-minus"></x-filament::button>
