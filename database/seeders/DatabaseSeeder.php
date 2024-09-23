@@ -16,12 +16,12 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
-            'password' => 'password',
-            'email_verified_at' => now()
+            'email_verified_at' => now(),
+            'password' => bcrypt('password'),
         ]);
 
         $this->call([
-            PaymentSeeder::class,
+            PaymentSeeder::class
         ]);
     }
 }

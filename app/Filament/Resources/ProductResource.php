@@ -71,6 +71,8 @@ class ProductResource extends Resource implements HasShieldPermissions
                 ])->columnSpan(1),
                 Section::make('Product Information')->schema([
                     Forms\Components\FileUpload::make('image')
+                        ->disk('public')
+                        ->visibility('public')
                         ->image()
                         ->required(),
                     Forms\Components\Toggle::make('is_active')
@@ -169,7 +171,7 @@ class ProductResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'force_delete',
-            'force_delete_any',
+            'force_delete_any'
         ];
     }
 }

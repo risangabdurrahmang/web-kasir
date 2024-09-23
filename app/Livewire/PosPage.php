@@ -107,7 +107,7 @@ class PosPage extends Component implements HasForms
             'confirmForm',
         ];
     }
-
+  
     // add product to cart
     public function addItem($productId)
     {
