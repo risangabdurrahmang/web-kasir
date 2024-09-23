@@ -7,14 +7,23 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class PosPage extends Component
+class PosPage extends Component implements HasForms
 {
+    use InteractsWithForms;
     use WithPagination;
 
     public $customer_id;
@@ -57,6 +66,48 @@ class PosPage extends Component
             ->paginate(6);
     }
 
+    public function checkoutForm(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Select::make('customer_id')
+                    ->relationship('customer', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Select::make('payment_id')
+                    ->relationship('payment', 'name')
+                    ->options(function () {
+                        return Payment::where('is_active', true)->pluck('name', 'id');
+                    })
+                    ->native(false)
+                    ->required(),
+            ])
+            ->model(Order::class);
+    }
+
+    public function confirmForm(Form $form): Form
+    {
+        return $form->schema([
+            TextInput::make('paid')
+                ->numeric()
+                ->required()
+                ->live(onBlur: true)
+                ->afterStateUpdated(fn($state) => $this->updatedPaid($state)),
+            TextInput::make('change')
+                ->numeric()
+                ->disabled(),
+        ])->model(Order::class);
+    }
+
+    protected function getForms(): array
+    {
+        return [
+            'checkoutForm',
+            'confirmForm',
+        ];
+    }
+  
     // add product to cart
     public function addItem($productId)
     {
@@ -112,7 +163,7 @@ class PosPage extends Component
         $this->change = $this->calculateChange($value);
     }
 
-    // count money changes
+    // count change
     public function calculateChange($paid)
     {
         $totalPrice = $this->getTotalPrice();
@@ -177,7 +228,7 @@ class PosPage extends Component
                 ->send();
 
             $this->reset();
-            return redirect('/admin/orders');
+            return redirect('/orders');
         } catch (ValidationException $e) {
             Notification::make()
                 ->title('Error Validation')

@@ -60,7 +60,7 @@
                     Checkout Form
                 </x-slot>
                 <form wire:submit.prevent="cashPopup">
-                    <div class="flow-root">
+                    <div class="flow-root mb-4">
                         @if (empty($cartItems))
                             <p class="text-sm text-center my-6">Empty Cart</p>
                         @else
@@ -94,75 +94,16 @@
                                 @endforeach
                             </div>
                         @endif
+                        <dl class="flex items-center justify-between gap-4 mt-6">
+                            <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
+                            <dd class="text-base font-bold text-gray-900 dark:text-white">Rp.
+                                {{ Number::format($this->getTotalPrice()) }}</dd>
+                        </dl>
                     </div>
-                    <!-- Customer Search -->
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        selectedId: @entangle('customer_id').defer,
-                        options: @js($customers),
-                        get filteredOptions() {
-                            if (!this.search.trim()) return this.options;
-                            return this.options.filter(option => option.name.toLowerCase().includes(this.search.toLowerCase()));
-                        },
-                        get selectedOption() {
-                            if (!this.selectedId) return null;
-                            return this.options.find(option => option.id === this.selectedId);
-                        },
-                        selectOption(option) {
-                            this.selectedId = option.id;
-                            this.search = option.name;
-                            this.open = false;
-                            @this.customer_id = option.id;
-                        }
-                    }">
-                        <div class="relative mt-6">
-                            <input type="text" x-model="search" @focus="open = true" @click.away="open = false"
-                                placeholder="Search customer"
-                                class="relative w-full text-normal border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-950 py-2 pl-3 pr-10 text-left shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:border-yellow-500 focus:ring-yellow-500">
-                            <div x-show="open" x-cloak
-                                class="absolute z-50 mt-1 max-h-52 w-full rounded-md bg-gray-50 dark:bg-gray-950 py-1 text-base shadow-lg">
-                                <ul class="max-h-52 overflow-auto">
-                                    <template x-for="option in filteredOptions" :key="option.id">
-                                        <li @click="selectOption(option)"
-                                            class="cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-300"
-                                            :class="{
-                                                'bg-yellow-500 text-black dark:text-white': selectedOption &&
-                                                    selectedOption
-                                                    .id === option.id
-                                            }">
-                                            <span x-text="option.name" class="font-normal block truncate"></span>
-                                        </li>
-                                    </template>
-                                    <li x-show="filteredOptions.length === 0"
-                                        class="cursor-default select-none py-2 pl-3 pr-9 text-gray-500">
-                                        No customer found
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Payment Options -->
-                    <div class="mt-6 w-full">
-                        <x-filament::input.wrapper>
-                            <x-filament::input.select wire:model="payment_id">
-                                <option value="">Select payment</option>
-                                @foreach ($payments as $payment)
-                                    <option value="{{ $payment->id }}">{{ $payment->name }}</option>
-                                @endforeach
-                            </x-filament::input.select>
-                        </x-filament::input.wrapper>
-                    </div>
-                    <dl class="flex items-center justify-between gap-4 py-4">
-                        <dt class="text-base font-bold text-gray-900 dark:text-white">Total</dt>
-                        <dd class="text-base font-bold text-gray-900 dark:text-white">Rp.
-                            {{ Number::format($this->getTotalPrice()) }}</dd>
-                    </dl>
-                    <div class="space-y-3">
-                        <x-filament::button color="warning" type="submit" class="w-full">
-                            Checkout
-                        </x-filament::button>
-                    </div>
+                    {{ $this->checkoutForm }}
+                    <x-filament::button color="warning" type="submit" class="w-full mt-4">
+                        Checkout
+                    </x-filament::button>
                 </form>
                 <div x-data="{ showModal: @entangle('showModal') }" x-show="showModal"
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
@@ -190,20 +131,7 @@
                             <!-- Modal body -->
                             <div class="p-4 md:p-5">
                                 <div class="space-y-6">
-                                    <div>
-                                        <x-filament::input.wrapper>
-                                            <x-filament::input wire:model="paid" type="number" name="paid"
-                                                id="paid" placeholder="Paid"
-                                                wire:change="$set('paid', $event.target.value)" />
-                                        </x-filament::input.wrapper>
-                                    </div>
-                                    <div>
-                                        <x-filament::input.wrapper>
-                                            <x-filament::input wire:model.lazy="change" value="{{ $change }}"
-                                                type="number" disabled readonly name="change" id="change"
-                                                placeholder="Change" />
-                                        </x-filament::input.wrapper>
-                                    </div>
+                                    {{ $this->confirmForm }}
                                     <x-filament::button wire:click="saveOrder" color="warning" type="submit"
                                         class="w-full">
                                         Submit
