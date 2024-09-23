@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -39,6 +40,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                     Forms\Components\Select::make('customer_id')
                         ->searchable()
                         ->relationship('customer', 'name')
+                        ->preload()
                         ->required()
                         ->createOptionForm([
                             Forms\Components\TextInput::make('name')
@@ -47,21 +49,18 @@ class OrderResource extends Resource implements HasShieldPermissions
                                 ->columns(1),
                             Forms\Components\Select::make('gender')
                                 ->placeholder('Select gender')
+                                ->required()
                                 ->options([
                                     'Laki-laki' => 'Laki-laki',
                                     'Perempuan' => 'Perempuan',
                                 ])
-                                ->required()
-                                ->native(false)
                                 ->columns(1),
                             Forms\Components\TextInput::make('email')
                                 ->email()
-                                ->unique()
-                                ->required()
                                 ->placeholder('Enter email')
-                                ->columns(1),
+                                ->columns(1)
+                                ->unique(Customer::class, 'email', ignoreRecord: true),
                             Forms\Components\TextInput::make('phone')
-                                ->required()
                                 ->placeholder('Enter phone')
                                 ->columns(1),
                         ])->columns(2)
