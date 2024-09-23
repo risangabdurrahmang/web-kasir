@@ -74,27 +74,7 @@ class PosPage extends Component implements HasForms
                     ->relationship('customer', 'name')
                     ->searchable()
                     ->preload()
-                    ->required()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                        Select::make('gender')
-                            ->options([
-                                'Laki-laki' => 'Laki-laki',
-                                'Perempuan' => 'Perempuan',
-                            ])
-                            ->required()
-                            ->native(false),
-                        TextInput::make('email')
-                            ->label('Email address')
-                            ->email()
-                            ->maxLength(255)
-                            ->unique(Customer::class, 'email', ignoreRecord: true),
-                        TextInput::make('phone')
-                            ->label('Phone number')
-                            ->tel(),
-                    ]),
+                    ->required(),
                 Select::make('payment_id')
                     ->relationship('payment', 'name')
                     ->options(function () {
