@@ -21,12 +21,12 @@ Untuk lokal :
 
 8. Sinkronisasi permission filament shield dengan admin panel > php artisan shield:install
 
-9. Run development server :
+9. Optimasi filament pada environment local :
+    php artisan icons:cache
+
+10. Run development server :
    -Menjalankan halaman POS > npm run dev
    -Aplikasi untuk server web lokal :
     *Laragon : buka laragon, klik kanan, pilih www kemudian pilih project atau
               bisa langsung mengetikkan url sesuai dengan nama project (laravel-app.test)
     *Xampp : php artisan serve
-
-10. Optimasi filament pada environment local :
-    php artisan icons:cache
