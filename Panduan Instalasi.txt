@@ -17,6 +17,7 @@ Untuk lokal :
 7. Menjalankan migrasi dan seeder > php artisan migrate --seed
    Akun admin panel filament:
    -Admin > email: admin@example.com, pw: password
+   Untuk membuat akun dengan role lain gunakan format domain email @example.com contoh:(nama-email@example.com).
 
 8. Sinkronisasi permission filament shield dengan admin panel > php artisan shield:install
 
