@@ -1,3 +1,4 @@
+Untuk lokal :
 1. Estrak file zip
    -Laragon : taruh hasil estrak pada folder www
    -Xampp : hasil estrak dapat disimpan sesuai keinginan
