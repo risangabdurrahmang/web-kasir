@@ -1,8 +1,7 @@
 <section class="antialiased">
-    <article class="mx-auto max-w-screen-xl px-4 md:px-0 2xl:px-0">
-        <div class="mt-6 sm:mt-8 md:flex lg:items-start gap-8">
-            <div class="md:w-2/3 space-y-8">
-                <!-- Search Bar -->
+    <div class="container mx-auto p-4">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-2/3 space-y-6">
                 <div class="mx-auto">
                     <label for="default-search"
                         class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
@@ -15,47 +14,33 @@
                             </svg>
                         </div>
                         <input wire:model.live="search" type="search" id="default-search"
-                            class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
+                            class="block w-full p-4 ps-10 text-sm bg-white dark:bg-gray-900 text-gray-900 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-yellow-500 dark:focus:border-yellow-500"
                             placeholder="Search product" required />
                     </div>
                 </div>
-                <!-- Product List -->
-                <div class="space-y-4">
-                    @if ($products->isEmpty())
-                        <p class="text-xl text-center my-6">Empty Product</p>
-                    @else
-                        <div class="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 md:grid-cols-3">
-                            @foreach ($products as $product)
-                                <div wire:click="addItem({{ $product->id }})"
-                                    class="w-full h-40 max-w-sm sm:max-w-full flex md:flex-col md:h-full justify-start items-center bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                                    <a href="#">
-                                        <img class="p-6 rounded-t-lg mx-auto h-44"
-                                            src="{{ asset('storage/' . $product->image) }}"
-                                            alt="{{ $product->name . ' image' }}" />
-                                    </a>
-                                    <div class="px-5 pt-4 md:pt-0 pb-4">
-                                        <a href="#">
-                                            <h5
-                                                class="text-xl md:text-md font-bold tracking-tight text-gray-900 dark:text-white">
-                                                {{ $product->name }}</h5>
-                                        </a>
-                                        <div class="flex flex-col justify-between mt-2 gap-4">
-                                            <span
-                                                class="text-lg sm:text-base md:text-sm font-semibold text-gray-850 dark:text-white">Rp.{{ Number::format($product->price) }}</span>
-                                            <span
-                                                class="text-lg sm:text-base md:text-sm font-semibold text-gray-800 dark:text-white">Stock
-                                                : {{ $product->stock }}</span>
-                                        </div>
-                                    </div>
+                @if ($products->isEmpty())
+                    <p class="text-xl text-center my-6">Empty Product</p>
+                @else
+                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        @foreach ($products as $product)
+                            <div class="flex flex-col p-4 bg-white dark:bg-gray-900 rounded-lg shadow cursor-pointer"
+                                wire:click="addItem({{ $product->id }})">
+                                <img src="{{ asset('storage/' . $product->image) }}"
+                                    alt="{{ $product->name . ' image' }}"
+                                    class="w-full h-40 object-cover rounded mb-4" />
+                                <div class="flex-grow">
+                                    <h3 class="font-semibold">{{ $product->name }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">Stock :
+                                        {{ $product->stock }}</p>
                                 </div>
-                            @endforeach
-                        </div>
-                        {{ $products->links() }}
-                    @endif
-                </div>
+                                <span class="font-bold mt-2">Rp.{{ Number::format($product->price) }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                    {{ $products->links() }}
+                @endif
             </div>
-            <!-- Cart and Payment -->
-            <x-filament::section class="mt-6 md:w-1/3 space-y-6 sm:mt-8 md:mt-0">
+            <x-filament::section class="lg:w-1/3 h-fit">
                 <x-slot name="heading">
                     Checkout Form
                 </x-slot>
@@ -64,24 +49,26 @@
                         @if (empty($cartItems))
                             <p class="text-sm text-center my-6">Empty Cart</p>
                         @else
-                            <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-800">
+                            <div class="-my-3 divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach ($cartItems ?? [] as $key => $value)
-                                    <div class="flex justify-between p-2">
-                                        <div class="flex justify-between gap-4">
-                                            <div class="h-24 w-24 rounded-md overflow-hidden">
+                                    <div class="flex items-center justify-between py-3">
+                                        <div class="flex lg:mx-auto gap-4 items-center lg:flex-col xl:flex-row">
+                                            <div class="h-16 w-16 md:h-20 md:w-20">
                                                 <img src="{{ asset('storage/' . $value['image']) }}"
                                                     alt="{{ $value['name'] . ' image' }}"
-                                                    class="h-full w-full object-contain object-center">
+                                                    class="h-full w-full object-cover object-center rounded-md">
                                             </div>
-                                            <div class="space-y-2 flex-1">
-                                                <h3 class="text-sm">{{ $value['name'] }}</h3>
-                                                <h3 class="text-xs">Rp. {{ Number::format($value['price']) }}</h3>
-                                                <div class="flex items-center mt-auto">
+                                            <div class="space-y-1">
+                                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    {{ $value['name'] }}</h3>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">Rp.
+                                                    {{ Number::format($value['price']) }}</p>
+                                                <div class="flex items-center mt-2">
                                                     <x-filament::button size="xs"
                                                         wire:click="removeItem('{{ $key }}')" type="button"
                                                         color="gray" icon="heroicon-m-minus"></x-filament::button>
                                                     <input
-                                                        class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
+                                                        class="w-10 text-center border-0 bg-transparent text-sm font-medium text-gray-900 focus:outline-none focus:ring-0 dark:text-white"
                                                         value="{{ $value['quantity'] }}" type="text"
                                                         inputmode="numeric" name="quantity" id="quantity" readonly />
                                                     <x-filament::button size="xs"
@@ -143,5 +130,5 @@
                 </div>
             </x-filament::section>
         </div>
-    </article>
+    </div>
 </section>

@@ -1,3 +1,4 @@
+Untuk lokal :
 1. Estrak file zip
    -Laragon : taruh hasil estrak pada folder www
    -Xampp : hasil estrak dapat disimpan sesuai keinginan
@@ -16,10 +17,14 @@
 7. Menjalankan migrasi dan seeder > php artisan migrate --seed
    Akun admin panel filament:
    -Admin > email: admin@example.com, pw: password
+   Untuk membuat akun dengan role lain gunakan format domain email @example.com contoh:(nama-email@example.com).
 
 8. Sinkronisasi permission filament shield dengan admin panel > php artisan shield:install
 
-8. Run development server :
+9. Optimasi filament pada environment local :
+    php artisan icons:cache
+
+10. Run development server :
    -Menjalankan halaman POS > npm run dev
    -Aplikasi untuk server web lokal :
     *Laragon : buka laragon, klik kanan, pilih www kemudian pilih project atau
