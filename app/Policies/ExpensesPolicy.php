@@ -95,7 +95,7 @@ class ExpensesPolicy
      */
     public function replicate(User $user, Expenses $expenses): bool
     {
-        return $user->can('replicate_expenses');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ExpensesPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_expenses');
+        return $user->can('{{ Reorder }}');
     }
 }

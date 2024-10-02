@@ -1,0 +1,20 @@
+Lisensi Khusus untuk Kode Sumber Situs Web POS
+
+Hak Cipta © [Risang Abdurrahman Gustiwa] [2024]. Semua hak dilindungi undang-undang.
+
+Dengan membeli kode sumber ini, Anda diberikan lisensi non-eksklusif, tidak dapat dipindahtangankan, dan terbatas untuk menggunakan kode tersebut untuk proyek pribadi dan lepas.
+
+1. Penggunaan:
+   - Kode sumber ini hanya dapat digunakan untuk proyek pribadi atau freelance.
+   - Anda tidak diperbolehkan menggunakan kode ini untuk tujuan komersial atau proyek yang bersaing dengan produk ini.
+
+2. Modifikasi:
+   - Anda dapat mengubah kode untuk proyek pribadi atau lepas, namun versi kode yang dimodifikasi tidak boleh didistribusikan atau dijual.
+
+3. Redistribusi:
+   - Anda tidak diperbolehkan menjual, mendistribusikan ulang, atau membagikan kode sumber ini atau karya turunannya tanpa izin tertulis yang jelas dari penulisnya.
+
+4. Garansi dan Tanggung Jawab:
+   - Kode sumber disediakan "apa adanya", tanpa jaminan atau dukungan apa pun. Penulis tidak bertanggung jawab atas segala kerusakan atau masalah yang timbul akibat penggunaan kode ini.
+
+Dengan menggunakan kode ini, Anda menyetujui ketentuan lisensi ini.
