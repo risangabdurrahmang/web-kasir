@@ -25,7 +25,6 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->brandName('POSera')
             ->favicon(asset('favicon.ico'))
-            ->spa()
             ->default()
             ->id('admin')
             ->path('/')
