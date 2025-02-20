@@ -16,10 +16,15 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Midtrans\Config;
+use Midtrans\Snap;
+use Illuminate\Support\Str;
 
 class PosPage extends Component implements HasForms
 {
@@ -34,14 +39,7 @@ class PosPage extends Component implements HasForms
     public $search = '';
     public $paid;
     public $change;
-    public $showModal = false;
-
-    public function mount()
-    {
-        $this->loadPayments();
-        $this->loadCustomers();
-        $this->loadProducts();
-    }
+    public $showCashModal = false;
 
     // take data customer from database
     public function loadCustomers()
@@ -58,12 +56,15 @@ class PosPage extends Component implements HasForms
     // take data product from database
     public function loadProducts()
     {
-        return Product::where('stock', '>', 0)
-            ->where('is_active', true)
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
-            })
-            ->paginate(6);
+        $query = Product::with('category')
+            ->where('stock', '>', 0)
+            ->where('is_active', true);
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%');
+        }
+
+        return $query->paginate(6);
     }
 
     public function checkoutForm(Form $form): Form
@@ -107,7 +108,7 @@ class PosPage extends Component implements HasForms
             'confirmForm',
         ];
     }
-  
+
     // add product to cart
     public function addItem($productId)
     {
@@ -172,81 +173,11 @@ class PosPage extends Component implements HasForms
         return $change;
     }
 
-    // save order
-    public function saveOrder()
+    public function checkout()
     {
         $payment = Payment::find($this->payment_id);
+        $customer = Customer::find($this->customer_id);
 
-        $rules = [
-            'customer_id' => 'required',
-            'payment_id' => 'required',
-        ];
-
-        $messages = [
-            'customer_id.required' => 'Customer field is required',
-            'payment_id.required' => 'Payment field is required',
-        ];
-
-        if ($payment && $payment->name === 'Cash') {
-            $rules['paid'] = 'required|numeric|min:' . $this->getTotalPrice();
-            $messages['paid.required'] = 'Paid field is required';
-            $messages['paid.min'] = 'Paid payment must be at least the total price';
-        }
-
-        try {
-            $this->validate($rules, $messages);
-
-            if ($payment->name !== 'Cash') {
-                $this->paid = 0;
-                $this->change = 0;
-            }
-
-            DB::transaction(function () {
-                $order = Order::create([
-                    'customer_id' => $this->customer_id,
-                    'payment_id' => $this->payment_id,
-                    'paid' => $this->paid,
-                    'change' => $this->change,
-                    'total' => $this->getTotalPrice(),
-                ]);
-
-                foreach ($this->cartItems as $cartItem) {
-                    $product = Product::find($cartItem['id']);
-
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $product->id,
-                        'quantity' => $cartItem['quantity'],
-                        'sub_total' => $product->price * $cartItem['quantity'],
-                    ]);
-                }
-            });
-
-            Notification::make()
-                ->title('Order Saved Successfully')
-                ->success()
-                ->send();
-
-            $this->reset();
-            return redirect('/orders');
-        } catch (ValidationException $e) {
-            Notification::make()
-                ->title('Error Validation')
-                ->danger()
-                ->body($e->getMessage())
-                ->send();
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Error')
-                ->danger()
-                ->body($e->getMessage())
-                ->send();
-        }
-    }
-
-    // show popup modal when payment cash selected and contain paid dan money changes field
-    public function cashPopup()
-    {
         if (empty($this->cartItems)) {
             Notification::make()
                 ->title('Cart is empty')
@@ -255,27 +186,136 @@ class PosPage extends Component implements HasForms
             return;
         }
 
-        try {
-            $this->validate([
-                'customer_id' => 'required',
-                'payment_id' => 'required',
-            ], [
-                'customer_id.required' => 'Customer field is required',
-                'payment_id.required' => 'Payment field is required',
-            ]);
-
-            $payment = Payment::find($this->payment_id);
-            if ($payment && $payment->name === 'Cash') {
-                $this->showModal = true;
-            } else {
-                $this->saveOrder();
-            }
-        } catch (ValidationException $e) {
+        if (!$customer) {
             Notification::make()
-                ->title('Error Validation')
+                ->title('Please select customer')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if (!$payment) {
+            Notification::make()
+                ->title('Please select payment method')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if ($payment->name === 'Cash') {
+            $this->showCashModal = true;
+        } else {
+            $this->processOnlinePayment();
+        }
+    }
+
+    public function processOnlinePayment()
+    {
+        $itemDetails = [];
+
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+
+        $order = Order::create([
+            'order_number' => 'ORD-' . Str::random(10),
+            'customer_id' => $this->customer_id,
+            'payment_id' => $this->payment_id,
+            'total' => $this->getTotalPrice(),
+            'paid' => 0,
+            'change' => 0,
+            'status' => 'pending'
+        ]);
+
+        foreach ($this->cartItems as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'sub_total' => $item['price'] * $item['quantity'],
+            ]);
+            $itemDetails[] = [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'price' => (float) $item['price'],
+                'quantity' => (int) $item['quantity'],
+            ];
+        }
+
+        $grossAmount = array_reduce($itemDetails, function ($total, $item) {
+            return $total + ($item['price'] * $item['quantity']);
+        }, 0);
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order->order_number,
+                'gross_amount' => $grossAmount,
+            ],
+            'customer_details' => [
+                'first_name' => $order->customer->name,
+                'email' => $order->customer->email,
+                'phone' => $order->customer->phone,
+            ],
+            'item_details' => $itemDetails,
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($params);
+
+            // $order->update(['snap_token' => $snapToken]);
+
+            $this->dispatch('snapPayment', snapToken: $snapToken);
+            $this->reset();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Payment Gateway Error')
                 ->danger()
                 ->body($e->getMessage())
                 ->send();
+        }
+    }
+
+    public function processCashPayment()
+    {
+        $this->validate([
+            'paid' => 'required|numeric|min:' . $this->getTotalPrice(),
+        ], [
+            'paid.min' => 'Paid amount must be at least the total price'
+        ]);
+
+        try {
+            DB::transaction(function () {
+                $order = Order::create([
+                    'customer_id' => $this->customer_id,
+                    'payment_id' => $this->payment_id,
+                    'paid' => $this->paid,
+                    'change' => $this->paid - $this->getTotalPrice(),
+                    'total' => $this->getTotalPrice(),
+                    'status' => 'paid',
+                ]);
+
+                foreach ($this->cartItems as $item) {
+                    $product = Product::find($item['id']);
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item['id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'sub_total' => $product->price * $item['quantity'],
+                    ]);
+                }
+            });
+
+            $this->reset();
+
+            Notification::make()
+                ->title('Order completed successfully')
+                ->success()
+                ->send();
+
+            return redirect('/orders');
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Error')

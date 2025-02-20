@@ -14,12 +14,14 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'order_number',
         'payment_id',
         'notes',
         'customer_id',
         'paid',
         'change',
         'total',
+        'status',
     ];
 
     public function items(): HasMany

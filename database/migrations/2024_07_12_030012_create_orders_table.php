@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('order_number')->unique();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->longText('notes')->nullable();
             $table->foreignId('payment_id')->constrained('payments')->onDelete('cascade');
             $table->integer('paid');
             $table->integer('change');
             $table->decimal('total', 10, 2);
+            $table->enum('status', ['pending', 'paid', 'failed', 'expired']);
             $table->timestamps();
             $table->softDeletes();
         });

@@ -44,7 +44,7 @@
                 <x-slot name="heading">
                     Checkout Form
                 </x-slot>
-                <form wire:submit.prevent="cashPopup">
+                <form wire:submit.prevent="checkout">
                     <div class="flow-root mb-4">
                         @if (empty($cartItems))
                             <p class="text-sm text-center my-6">Empty Cart</p>
@@ -92,11 +92,11 @@
                         Checkout
                     </x-filament::button>
                 </form>
-                <div x-data="{ showModal: @entangle('showModal') }" x-show="showModal"
+                <div x-data="{ showCashModal: @entangle('showCashModal') }" x-show="showCashModal"
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                    @click.away="showModal = false">
+                    @click.away="showCashModal = false">
                     <!-- Main modal -->
-                    <div class="relative p-4 w-full max-w-md max-h-full" @click.away="showModal = false">
+                    <div class="relative p-4 w-full max-w-md max-h-full" @click.away="showCashModal = false">
                         <!-- Modal content -->
                         <div class="relative bg-gray-100 dark:bg-gray-800 rounded-lg shadow" @click.stop>
                             <div
@@ -104,7 +104,7 @@
                                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                                     Confirm Cash Payment
                                 </h3>
-                                <button type="button" @click="showModal = false"
+                                <button type="button" @click="showCashModal = false"
                                     class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-hide="authentication-modal">
                                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -119,8 +119,7 @@
                             <div class="p-4 md:p-5">
                                 <div class="space-y-6">
                                     {{ $this->confirmForm }}
-                                    <x-filament::button wire:click="saveOrder" color="warning" type="submit"
-                                        class="w-full">
+                                    <x-filament::button wire:click="processCashPayment" color="warning" class="w-full">
                                         Submit
                                     </x-filament::button>
                                 </div>
@@ -132,3 +131,63 @@
         </div>
     </div>
 </section>
+
+@push('scripts')
+    <!-- Make sure this is loaded in head section -->
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ config('midtrans.client_key') }}"></script>
+
+    <script>
+        console.log('Script loaded'); // Debug log
+
+        document.addEventListener('livewire:initialized', () => {
+            console.log('Livewire initialized'); // Debug log
+
+            Livewire.on('snapPayment', (data) => {
+                console.log('snapPayment event received', data); // Debug log
+                const snapToken = data.snapToken; // Note: might need to adjust based on your data structure
+
+                console.log('Snap token:', snapToken); // Debug log
+
+                if (typeof snap !== 'undefined') {
+                    console.log('Snap is defined'); // Debug log
+                    try {
+                        snap.pay(snapToken, {
+                            onSuccess: function(result) {
+                                console.log('Success:', result);
+                                Livewire.dispatch('paymentSuccess', {
+                                    result
+                                });
+                                window.location.href = '/orders';
+                                // window.location.href = '/payment/success/' + result.order_id;
+                            },
+                            onPending: function(result) {
+                                console.log('Pending:', result);
+                                Livewire.dispatch('paymentPending', {
+                                    result
+                                });
+                                window.location.href = '/orders';
+                            },
+                            onError: function(result) {
+                                console.log('Error:', result);
+                                Livewire.dispatch('paymentError', {
+                                    result
+                                });
+                                window.location.href = '/orders';
+                            },
+                            onClose: function() {
+                                console.log(
+                                    'Customer closed the popup without finishing payment');
+                                Livewire.dispatch('paymentClosed');
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error calling snap.pay:', e);
+                    }
+                } else {
+                    console.error('Snap is not defined!');
+                }
+            });
+        });
+    </script>
+@endpush

@@ -225,6 +225,8 @@ class OrderResource extends Resource implements HasShieldPermissions
                     ->numeric()
                     ->sortable()
                     ->money('IDR', locale: 'id'),
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -278,7 +280,6 @@ class OrderResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    // count total from paid - change
     public static function updateTotals(Get $get, Set $set): void
     {
         $selectedProducts = collect($get('items'))->filter(fn($item) => !empty($item['product_id']) && !empty($item['quantity']));
