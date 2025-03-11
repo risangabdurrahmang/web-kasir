@@ -24,6 +24,8 @@ class Order extends Model
         'status',
     ];
 
+    protected $with = ['payment', 'customer'];
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

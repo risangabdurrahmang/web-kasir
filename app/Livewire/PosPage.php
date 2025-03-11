@@ -219,7 +219,7 @@ class PosPage extends Component implements HasForms
         Config::$is3ds = config('midtrans.is_3ds');
 
         $order = Order::create([
-            'order_number' => 'ORD-' . Str::random(10),
+            'order_number' => 'OLN-' . Str::random(10),
             'customer_id' => $this->customer_id,
             'payment_id' => $this->payment_id,
             'total' => $this->getTotalPrice(),
@@ -264,8 +264,6 @@ class PosPage extends Component implements HasForms
         try {
             $snapToken = Snap::getSnapToken($params);
 
-            // $order->update(['snap_token' => $snapToken]);
-
             $this->dispatch('snapPayment', snapToken: $snapToken);
             $this->reset();
         } catch (\Exception $e) {
@@ -288,6 +286,7 @@ class PosPage extends Component implements HasForms
         try {
             DB::transaction(function () {
                 $order = Order::create([
+                    'order_number' => 'CSH' . Str::random(10),
                     'customer_id' => $this->customer_id,
                     'payment_id' => $this->payment_id,
                     'paid' => $this->paid,

@@ -19,6 +19,8 @@ class OrderItem extends Model
         'sub_total',
     ];
 
+    protected $with = ['order', 'product'];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

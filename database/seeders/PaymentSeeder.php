@@ -15,8 +15,7 @@ class PaymentSeeder extends Seeder
     {
         $payments = [
             ['name' => 'Cash', 'is_active' => true],
-            ['name' => 'QRIS', 'is_active' => true],
-            ['name' => 'Bank Transfer', 'is_active' => true],
+            ['name' => 'Online', 'is_active' => true],
         ];
 
         foreach ($payments as $payment) {

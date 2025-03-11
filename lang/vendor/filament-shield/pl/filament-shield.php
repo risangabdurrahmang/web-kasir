@@ -7,12 +7,11 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'column.name' => 'Name',
-    'column.guard_name' => 'Guard Name',
-    'column.team' => 'Team',
-    'column.roles' => 'Roles',
-    'column.permissions' => 'Permissions',
-    'column.updated_at' => 'Updated At',
+    'column.name' => 'Nazwa',
+    'column.guard_name' => 'Nazwa strażnika',
+    'column.roles' => 'Role',
+    'column.permissions' => 'Permisje',
+    'column.updated_at' => 'Zaktualizowano',
 
     /*
     |--------------------------------------------------------------------------
@@ -20,13 +19,11 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'field.name' => 'Name',
-    'field.guard_name' => 'Guard Name',
-    'field.permissions' => 'Permissions',
-    'field.team' => 'Team',
-    'field.team.placeholder' => 'Select a team ...',
-    'field.select_all.name' => 'Select All',
-    'field.select_all.message' => 'Enables/Disables all Permissions for this role',
+    'field.name' => 'Nazwa',
+    'field.guard_name' => 'Nzwa strażnika',
+    'field.permissions' => 'Permisje',
+    'field.select_all.name' => 'Zaznacz wszystkie',
+    'field.select_all.message' => 'Włącz wszystkie permisje obecnie<span class="text-primary font-medium">Włączone</span> dla tej roli',
 
     /*
     |--------------------------------------------------------------------------
@@ -35,10 +32,10 @@ return [
     */
 
     'nav.group' => 'Filament Shield',
-    'nav.role.label' => 'Roles',
+    'nav.role.label' => 'Role',
     'nav.role.icon' => 'heroicon-o-shield-check',
-    'resource.label.role' => 'Role',
-    'resource.label.roles' => 'Roles',
+    'resource.label.role' => 'Rola',
+    'resource.label.roles' => 'Role',
 
     /*
     |--------------------------------------------------------------------------
@@ -46,11 +43,11 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'section' => 'Entities',
-    'resources' => 'Resources',
-    'widgets' => 'Widgets',
-    'pages' => 'Pages',
-    'custom' => 'Custom Permissions',
+    'section' => 'Podmioty',
+    'resources' => 'Zasoby',
+    'widgets' => 'Widżety',
+    'pages' => 'Strony',
+    'custom' => 'Niestandardowe permisje',
 
     /*
     |--------------------------------------------------------------------------
@@ -58,7 +55,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'forbidden' => 'You do not have permission to access',
+    'forbidden' => 'Nie masz uprawnień do dostępu',
 
     /*
     |--------------------------------------------------------------------------
@@ -67,17 +64,17 @@ return [
     */
 
     'resource_permission_prefixes_labels' => [
-        'view' => 'View',
-        'view_any' => 'View Any',
-        'create' => 'Create',
-        'update' => 'Update',
-        'delete' => 'Delete',
-        'delete_any' => 'Delete Any',
-        'force_delete' => 'Force Delete',
-        'force_delete_any' => 'Force Delete Any',
-        'restore' => 'Restore',
-        'reorder' => 'Reorder',
-        'restore_any' => 'Restore Any',
-        'replicate' => 'Replicate',
+        'view' => 'Widok',
+        'view_any' => 'Widok dowolnego',
+        'create' => 'Tworzenie',
+        'update' => 'Aktualizacja',
+        'delete' => 'Usuwanie',
+        'delete_any' => 'Usuwanie dowolnego',
+        'force_delete' => 'Wymuszone usunięcie',
+        'force_delete_any' => 'Wymuszone usunięcie dowolnego',
+        'restore' => 'Przywracanie',
+        'reorder' => 'Zmiana kolejności',
+        'restore_any' => 'Przywracanie dowolnego',
+        'replicate' => 'Duplikowanie',
     ],
 ];

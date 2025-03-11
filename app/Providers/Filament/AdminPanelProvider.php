@@ -23,6 +23,7 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->spa()
             ->brandName('POSera')
             ->favicon(asset('favicon.ico'))
             ->default()

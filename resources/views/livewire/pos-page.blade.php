@@ -133,26 +133,25 @@
 </section>
 
 @push('scripts')
-    <!-- Make sure this is loaded in head section -->
     <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('midtrans.client_key') }}"></script>
+        data-client-key="{{ config('midtrans.client_key') }}" onload="console.log('Midtrans Snap loaded!')"></script>
 
     <script>
-        console.log('Script loaded'); // Debug log
+        console.log('Script loaded');
 
         document.addEventListener('livewire:initialized', () => {
-            console.log('Livewire initialized'); // Debug log
+            console.log('Livewire initialized');
 
             Livewire.on('snapPayment', (data) => {
-                console.log('snapPayment event received', data); // Debug log
-                const snapToken = data.snapToken; // Note: might need to adjust based on your data structure
+                console.log('snapPayment event received', data);
+                const snapToken = data.snapToken;
 
-                console.log('Snap token:', snapToken); // Debug log
+                console.log('Snap token:', snapToken);
 
                 if (typeof snap !== 'undefined') {
-                    console.log('Snap is defined'); // Debug log
+                    console.log('Snap is defined');
                     try {
-                        snap.pay(snapToken, {
+                        window.snap.pay(snapToken, {
                             onSuccess: function(result) {
                                 console.log('Success:', result);
                                 Livewire.dispatch('paymentSuccess', {
