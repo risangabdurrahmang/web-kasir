@@ -7,19 +7,13 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Midtrans\Config;
@@ -213,11 +207,13 @@ class PosPage extends Component implements HasForms
     {
         $itemDetails = [];
 
+        // Midtrans configuration
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
 
+        // Create order
         $order = Order::create([
             'order_number' => 'OLN-' . Str::random(10),
             'customer_id' => $this->customer_id,
@@ -228,6 +224,8 @@ class PosPage extends Component implements HasForms
             'status' => 'pending'
         ]);
 
+        $grossAmount = 0;
+
         foreach ($this->cartItems as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -236,22 +234,28 @@ class PosPage extends Component implements HasForms
                 'price' => $item['price'],
                 'sub_total' => $item['price'] * $item['quantity'],
             ]);
+
+            // Calculate price for this item (ensuring it's a float)
+            $itemPrice = (float) $item['price'];
+            $itemQuantity = (int) $item['quantity'];
+            $itemSubtotal = $itemPrice * $itemQuantity;
+
+            $grossAmount += $itemSubtotal;
+
             $itemDetails[] = [
-                'id' => $item['id'],
+                'id' => (string) $item['id'],
                 'name' => $item['name'],
-                'price' => (float) $item['price'],
-                'quantity' => (int) $item['quantity'],
+                'price' => $itemPrice,
+                'quantity' => $itemQuantity,
             ];
         }
 
-        $grossAmount = array_reduce($itemDetails, function ($total, $item) {
-            return $total + ($item['price'] * $item['quantity']);
-        }, 0);
+        $grossAmount = (float) $order->total;
 
         $params = [
             'transaction_details' => [
                 'order_id' => $order->order_number,
-                'gross_amount' => $grossAmount,
+                'gross_amount' => (int) round($grossAmount), // Round to ensure integer value
             ],
             'customer_details' => [
                 'first_name' => $order->customer->name,
@@ -263,7 +267,6 @@ class PosPage extends Component implements HasForms
 
         try {
             $snapToken = Snap::getSnapToken($params);
-
             $this->dispatch('snapPayment', snapToken: $snapToken);
             $this->reset();
         } catch (\Exception $e) {
